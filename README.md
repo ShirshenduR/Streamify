@@ -23,7 +23,7 @@
 
 | Layer     | Stack                                                                 |
 | --------- | --------------------------------------------------------------------- |
-| Frontend  | React, Vite, Plain CSS, Lucide Icons                                  |
+| Frontend  | React, Vite, Plain CSS, React Icons                                  |
 | Backend   | Django, Django REST Framework                                         |
 | Auth      | Firebase Authentication (Google login)                                |
 | Music API | [Unofficial JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api) |
