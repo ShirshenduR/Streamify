@@ -1,0 +1,70 @@
+.home-page {
+  background-color: #1c0f0f;
+  min-height: 100vh;
+  padding-bottom: 6rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.section-wrapper {
+  margin: 0 2rem;
+}
+
+.top-results-heading {
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.song-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  background-color: transparent;
+  border-radius: 8px;
+  padding: 0.8rem;
+  transition: background 0.2s;
+}
+
+.song-card:hover {
+  background-color: #2c1d1d;
+}
+
+.song-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.song-label {
+  margin: 0;
+  color: #c5b2b2;
+  font-size: 0.75rem;
+}
+
+.song-title {
+  margin: 2px 0 0 0;
+  color: white;
+  font-weight: 600;
+}
+
+.song-artist {
+  margin: 2px 0 0 0;
+  color: #a99;
+  font-size: 0.8rem;
+}
+
+.song-cover {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.mini-player-wrapper {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+}

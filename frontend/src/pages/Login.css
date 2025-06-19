@@ -1,0 +1,68 @@
+/* Login.css */
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #1a0f0f;
+  color: white;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  padding: 1rem;
+}
+
+.logo {
+  margin-bottom: 1.5rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ff5f7e;
+  margin: 0.5rem 0;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.terms {
+  font-size: 0.875rem;
+  color: #cbbcbc;
+  margin-bottom: 2rem;
+}
+
+.terms span {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.google-btn {
+  background-color: #e94149;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.google-btn:hover {
+  background-color: #c73b41;
+}
+
+footer {
+  position: absolute;
+  bottom: 1rem;
+  font-size: 0.75rem;
+  color: #b8a8a8;
+}
