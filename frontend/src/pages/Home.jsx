@@ -1,70 +1,63 @@
-import { useState } from 'react';
-import SearchBar from '../components/SearchBar';
-import MiniPlayer from '../components/Miniplayer';
+import React, { useEffect, useState, useRef } from 'react';
+import SongCard from '../components/SongCard';
+import { searchSongs } from '../utils/api';
 import './Home.css';
+import { usePlayer } from '../context/usePlayer';
+import SearchBar from '../components/SearchBar';
 
-const songs = [
-  {
-    title: 'Midnight Groove',
-    artist: 'DJ Echo',
-    cover: 'https://via.placeholder.com/80x80.png?text=1',
-  },
-  {
-    title: 'Electric Dreams',
-    artist: 'Synthwave Collective',
-    cover: 'https://via.placeholder.com/80x80.png?text=2',
-  },
-  {
-    title: 'Urban Pulse',
-    artist: 'Beat Maestro',
-    cover: 'https://via.placeholder.com/80x80.png?text=3',
-  },
-  {
-    title: 'Ocean Drive',
-    artist: 'Tropical Beats',
-    cover: 'https://via.placeholder.com/80x80.png?text=4',
-  },
-  {
-    title: 'Starlight Serenade',
-    artist: 'Celestial Harmonies',
-    cover: 'https://via.placeholder.com/80x80.png?text=5',
-  },
-  {
-    title: 'Rhythmic Journey',
-    artist: 'Global Rhythms',
-    cover: 'https://via.placeholder.com/80x80.png?text=6',
-  },
-];
+export default function Home({ showSearch, setShowSearch }) {
+  const [randomSongs, setRandomSongs] = useState([]);
+  const { playSong } = usePlayer();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const searchInputRef = useRef(null);
 
-export default function Home() {
-  const [query, setQuery] = useState('');
-  const filteredSongs = songs.filter((song) =>
-    song.title.toLowerCase().includes(query.toLowerCase())
-  );
+  useEffect(() => {
+    const letters = 'abcdefghijklmnopqrstuvwxyz';
+    const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+    searchSongs(randomLetter).then(setRandomSongs);
+  }, []);
+
+  useEffect(() => {
+    if (showSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearch]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      searchSongs(searchQuery).then(setSearchResults);
+    } else {
+      setSearchResults([]);
+    }
+  }, [searchQuery]);
 
   return (
     <div className="home-page">
-      <SearchBar query={query} setQuery={setQuery} />
-
-      <div className="section-wrapper">
-        <h3 className="top-results-heading">Top Results</h3>
-        {filteredSongs.map((song, index) => (
-          <div className="song-card" key={index}>
-            <div className="song-info">
-              <p className="song-label">Song</p>
-              <p className="song-title">{song.title}</p>
-              <p className="song-artist">{song.artist}</p>
+      {showSearch && (
+        <div className="search-overlay-home">
+          <div className="search-overlay-backdrop" onClick={() => setShowSearch(false)} />
+          <div className="search-overlay-modal">
+            <SearchBar 
+              query={searchQuery} 
+              setQuery={setSearchQuery} 
+              inputRef={searchInputRef}
+            />
+            <div className="search-overlay-results">
+              {searchResults.length === 0 && searchQuery && <div className="no-results">No results found</div>}
+              {searchResults.map(song => (
+                <SongCard key={song.id} song={song} onClick={s => { playSong(s); setShowSearch(false); }} />
+              ))}
             </div>
-            <img className="song-cover" src={song.cover} alt={song.title} />
           </div>
-        ))}
-      </div>
-
-      {filteredSongs.length > 0 && (
-        <div className="mini-player-wrapper">
-          <MiniPlayer song={filteredSongs[0]} />
         </div>
       )}
+      <h2 className="section-title">Recommended For You</h2>
+      <div className="song-grid">
+        {randomSongs.map(song => (
+          <SongCard key={song.id} song={song} onClick={playSong} />
+        ))}
+      </div>
     </div>
   );
 }
