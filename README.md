@@ -1,21 +1,23 @@
 # 🎧 Streamify
 
-**Streamify** is a modern, open-source music streaming platform that lets you search, play, and download music for free — ad-free. Built using **React + Vite** and **Django REST**, it features a sleek dark UI, Google login, liked songs, and playlist management.
+**Streamify** is a modern, open-source music streaming platform that lets you search, play, like, and download music for free — ad-free. Built using **React + Vite** for the frontend and **Django REST** for the backend, it features a sleek dark UI, Google login, per-user liked songs, and playlist management. All music data is fetched via the [unofficial JioSaavn API by @sumitkolhe](https://github.com/sumitkolhe/jiosaavn-api).
 
-> This project is intended for **educational purposes only** and uses the [unofficial JioSaavn API by @sumitkolhe](https://github.com/sumitkolhe/jiosaavn-api) to fetch and stream music data.
+> This project is for **educational purposes only** and does not store or redistribute music files.
 
 ---
 
 ## ✨ Features
 
 * 🔐 Google login (via Firebase)
-* 🔍 Search for songs, albums, artists
-* ▶️ Stream music with smooth player UI
-* ⬇️ Download tracks with 1-click
-* ❤️ Like/unlike songs
+* 🔍 Search for songs, albums, artists (JioSaavn API)
+* ▶️ Stream music with a modern, mobile-friendly player (NowPlaying & MiniPlayer overlays)
+* ❤️ Like/unlike songs (per user, synced with backend)
 * 📂 Create & manage custom playlists
-* 🌓 Dark themed UI (Figma designed)
-* 📱 Fully responsive frontend
+* ⬇️ Download tracks with 1-click
+* 🌓 Dark themed, Figma-inspired UI
+* 📱 Fully responsive frontend (mobile-first)
+* 🏷️ Library page with liked songs and playlists
+* 🔄 Real-time like/unlike sync across UI
 
 ---
 
@@ -23,9 +25,9 @@
 
 | Layer     | Stack                                                                 |
 | --------- | --------------------------------------------------------------------- |
-| Frontend  | React, Vite, Plain CSS, React Icons                                  |
-| Backend   | Django, Django REST Framework                                         |
-| Auth      | Firebase Authentication (Google login)                                |
+| Frontend  | React, Vite, Plain CSS                                               |
+| Backend   | Django, Django REST Framework                                        |
+| Auth      | Firebase Authentication (Google login)                               |
 | Music API | [Unofficial JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api) |
 
 ---
@@ -33,16 +35,24 @@
 ## 📁 Project Structure
 
 ```
-streamify/
-├── backend/               # Django backend
-│   ├── streamify_api/     # Django app (search, stream, auth, likes)
+Streamify/
+├── backend/                  # Django backend
+│   ├── music/                # Django app (API views, models, urls)
+│   ├── streamify_api/        # Django project settings
 │   ├── manage.py
-│   └── .env               # Environment variables (backend)
-└── frontend/              # React + Vite frontend
-    ├── components/
-    ├── pages/
-    ├── App.jsx
-    └── .env               # Environment variables (frontend)
+│   └── requirements.txt      # Python dependencies
+├── frontend/                 # React + Vite frontend
+│   ├── public/
+│   ├── src/
+│   │   ├── components/       # UI components (Miniplayer, Nowplaying, Navbar, etc.)
+│   │   ├── context/          # React context (Player, Auth)
+│   │   ├── pages/            # App pages (Home, Login, Library)
+│   │   ├── utils/            # API, firebaseConfig
+│   │   └── App.jsx
+│   ├── package.json
+│   └── vite.config.js
+├── README.md
+└── LICENSE
 ```
 
 ---
@@ -52,31 +62,18 @@ streamify/
 ### 🔧 Frontend Setup (React + Vite)
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/streamify.git
-cd streamify/streamify-frontend
-
+cd frontend
 npm install
 npm run dev
 ```
 
-> Create a `.env` file inside `streamify-frontend/` with your Firebase config:
+> Create a `.env` file inside `frontend/` with your Firebase config:
 
 ```env
 VITE_FIREBASE_API_KEY=YOUR_API_KEY
 VITE_FIREBASE_AUTH_DOMAIN=YOUR_APP.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=YOUR_PROJECT_ID
-...
-```
-
-Use them in code like:
-
-```js
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  ...
-};
+VITE_BACKEND_API_URL=http://localhost:8000
 ```
 
 ---
@@ -84,19 +81,16 @@ const firebaseConfig = {
 ### ⚙️ Backend Setup (Django + Django REST)
 
 ```bash
-cd ../backend
-
+cd backend
 python -m venv venv
 source venv/bin/activate  # or venv\Scripts\activate on Windows
-
 pip install -r requirements.txt
-
 python manage.py makemigrations
 python manage.py migrate
 python manage.py runserver
 ```
 
-Create `.env` in `backend/` to store environment variables like:
+> Create a `.env` in `backend/` to store environment variables like:
 
 ```env
 DEBUG=True
@@ -107,11 +101,9 @@ SECRET_KEY=your-secret
 
 ## 🔌 JioSaavn API Setup
 
-> You are using the **hosted API**, so no need to self-host.
+You are using the **hosted API**, so no need to self-host. Endpoints used:
 
-Use these endpoints:
-
-```http
+```
 GET https://saavn.dev/api/search/songs?query=kesariya
 GET https://saavn.dev/api/songs?id=SONG_ID
 ```
@@ -120,18 +112,16 @@ GET https://saavn.dev/api/songs?id=SONG_ID
 
 ## 🧠 Backend API Overview
 
-| Endpoint                    | Method   | Description              |
-| --------------------------- | -------- | ------------------------ |
-| `/api/search?q=`            | GET      | Search for songs         |
-| `/api/song?id=`             | GET      | Get stream URL + details |
-| `/api/download?id=`         | GET      | Download link to song    |
-| `/api/like`                 | POST     | Add song to liked list   |
-| `/api/liked`                | GET      | Get user's liked songs   |
-| `/api/playlists`            | GET/POST | Get or create playlists  |
-| `/api/playlists/<id>`       | PATCH    | Update playlist name     |
-| `/api/playlists/<id>/songs` | POST     | Add song to playlist     |
-
-> All endpoints are secured and require Firebase user tokens for authentication.
+| Endpoint                    | Method   | Description                |
+| --------------------------- | -------- | -------------------------- |
+| `/api/search/`              | GET      | Search for songs           |
+| `/api/song/`                | GET      | Get stream URL + details   |
+| `/api/download/`            | GET      | Download link to song      |
+| `/api/like/`                | POST     | Like or unlike a song      |
+| `/api/unlike/`              | POST     | Remove song from liked     |
+| `/api/liked/`               | GET      | Get user's liked songs     |
+| `/api/playlists/`           | GET/POST | Get or create playlists    |
+| `/api/playlists/<id>/`      | PATCH    | Update playlist name       |
 
 ---
 
@@ -152,24 +142,12 @@ This project is intended only for **learning and demonstration**. No music is st
 ## 🙌 Credits
 
 * 🎧 API: [Sumit Kolhe's JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api)
-* 📚 Icons: [Lucide Icons](https://lucide.dev)
 
 ---
 
 ## 📜 License
 
 MIT License
-
----
-
-## 💡 Contributing Ideas
-
-* Add lyrics integration
-* Enable queue & shuffle play
-* Create public profile pages
-* Add audio visualizer
-
-PRs are welcome!
 
 ---
 
