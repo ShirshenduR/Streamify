@@ -1,4 +1,4 @@
-import './MiniPlayer.css';
+import './Miniplayer.css';
 import { useState } from 'react';
 import Nowplaying from './Nowplaying';
 import { usePlayer } from '../context/usePlayer';
