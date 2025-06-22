@@ -90,12 +90,11 @@ export default function Nowplaying({ open, onClose }) {
 
   const isLiked = currentSong && likedSongs.some(s => s.id === currentSong.id);
 
-  // Download button handler
   const handleDownload = async () => {
     if (!currentSong) return;
     setDownloading(true);
     try {
-      const data = await downloadSong(currentSong.id);
+      const data = await downloadSong(currentSong.id, currentSong.source);
       const url = data.url || data.downloadUrl || data.audioUrl;
       if (url) {
         const a = document.createElement('a');
@@ -119,7 +118,6 @@ export default function Nowplaying({ open, onClose }) {
 
   if (!open) return null;
 
-  // Responsive padding for modal content
   const modalContentStyle = {
     display: 'flex',
     flexDirection: 'column',
@@ -138,6 +136,9 @@ export default function Nowplaying({ open, onClose }) {
           <div className="text-center" style={{margin:'0 auto',maxWidth:'90%'}}>
             <p className="nowplaying-track-title" style={{margin:'0 auto',textAlign:'center'}}>{currentSong?.title || ''}</p>
             <p className="nowplaying-track-artist" style={{margin:'0 auto',textAlign:'center'}}>{currentSong?.artist || ''}</p>
+            <p className="nowplaying-track-source" style={{margin:'0 auto',textAlign:'center',color:'#ecc9c9',fontSize:'0.9rem'}}>
+              {currentSong?.source === 'ytmusic' ? 'YouTube Music' : 'JioSaavn'}
+            </p>
           </div>
           <div style={{width:'100%'}}>
             <div
@@ -186,7 +187,6 @@ export default function Nowplaying({ open, onClose }) {
               onClick={handleLike}
               aria-label={isLiked ? 'Unlike' : 'Like'}
             >
-              {/* Like SVG: filled if liked, outline if not */}
               {isLiked ? (
                 <svg width="32" height="32" viewBox="0 0 64 64" fill="#fff" xmlns="http://www.w3.org/2000/svg">
                   <g id="Icon-Like">

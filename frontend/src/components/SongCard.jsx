@@ -10,6 +10,7 @@ export default function SongCard({ song, onClick }) {
       <div className="song-card-meta">
         <div className="song-card-title">{song.title}</div>
         <div className="song-card-artist">{song.artist}</div>
+        <div className="song-card-source">{song.source === 'ytmusic' ? 'YouTube Music' : 'JioSaavn'}</div>
       </div>
     </div>
   );

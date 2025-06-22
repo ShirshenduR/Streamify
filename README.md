@@ -1,6 +1,6 @@
 # 🎧 Streamify
 
-**Streamify** is a modern, open-source music streaming platform that lets you search, play, like, and download music for free — ad-free. Built using **React + Vite** for the frontend and **Django REST** for the backend, it features a sleek dark UI, Google login, per-user liked songs, and playlist management. All music data is fetched via the [unofficial JioSaavn API by @sumitkolhe](https://github.com/sumitkolhe/jiosaavn-api).
+**Streamify** is a modern, open-source music streaming platform that lets you search, play, like, and download music for free — ad-free. Built using **React + Vite** for the frontend and **Django REST** for the backend, it features a sleek dark UI, Google login, per-user liked songs, and playlist management. All music data is fetched via the [unofficial JioSaavn API by @sumitkolhe](https://github.com/sumitkolhe/jiosaavn-api), and [YouTube Music](https://music.youtube.com/) via [ytmusicapi](https://github.com/sigma67/ytmusicapi) and [yt-dlp](https://github.com/yt-dlp/yt-dlp).
 
 > This project is for **educational purposes only** and does not store or redistribute music files.
 
@@ -9,7 +9,7 @@
 ## ✨ Features
 
 * 🔐 Google login (via Firebase)
-* 🔍 Search for songs, albums, artists (JioSaavn API)
+* 🔍 Search for songs, albums, artists (JioSaavn API & YouTube Music)
 * ▶️ Stream music with a modern, mobile-friendly player (NowPlaying & MiniPlayer overlays)
 * ❤️ Like/unlike songs (per user, synced with backend)
 * 📂 Create & manage custom playlists
@@ -18,6 +18,7 @@
 * 📱 Fully responsive frontend (mobile-first)
 * 🏷️ Library page with liked songs and playlists
 * 🔄 Real-time like/unlike sync across UI
+* 🌎 International music support via YouTube Music
 
 ---
 
@@ -28,7 +29,7 @@
 | Frontend  | React, Vite, Plain CSS                                               |
 | Backend   | Django, Django REST Framework                                        |
 | Auth      | Firebase Authentication (Google login)                               |
-| Music API | [Unofficial JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api) |
+| Music API | [Unofficial JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api), [ytmusicapi](https://github.com/sigma67/ytmusicapi), [yt-dlp](https://github.com/yt-dlp/yt-dlp) |
 
 ---
 
@@ -145,6 +146,8 @@ This project is intended only for **learning and demonstration**. No music is st
 ## 🙌 Credits
 
 * 🎧 API: [Sumit Kolhe's JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api)
+* 🎵 YouTube Music integration: [ytmusicapi](https://github.com/sigma67/ytmusicapi) by sigma67
+* ⬇️ Audio extraction: [yt-dlp](https://github.com/yt-dlp/yt-dlp) by the yt-dlp contributors
 
 ---
 

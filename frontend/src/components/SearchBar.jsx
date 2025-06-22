@@ -44,11 +44,12 @@ export default function SearchBar({ open, onClose }) {
         <div className="search-overlay-results song-grid">
           {results.length === 0 && query && <div className="no-results">No results found</div>}
           {results.map(song => (
-            <div className="song-card-spotify" key={song.id} onClick={() => { playSong(song); onClose(); }}>
+            <div className="song-card-spotify" key={song.id + song.source} onClick={() => { playSong(song); onClose(); }}>
               <img className="song-card-img" src={song.cover} alt={song.title} />
               <div className="song-card-meta">
                 <div className="song-card-title">{song.title}</div>
                 <div className="song-card-artist">{song.artist}</div>
+                <div className="song-card-source">{song.source === 'ytmusic' ? 'YouTube Music' : 'JioSaavn'}</div>
               </div>
             </div>
           ))}

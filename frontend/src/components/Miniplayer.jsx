@@ -17,7 +17,6 @@ export default function MiniPlayer() {
     }
   };
 
-  // Toggle like/unlike and update UI instantly
   const handleLike = async (e) => {
     e.stopPropagation();
     if (!currentSong) return;
@@ -45,6 +44,7 @@ export default function MiniPlayer() {
               <div className="mini-text">
                 <p className="mini-title">{currentSong.title}</p>
                 <p className="mini-artist">{currentSong.artist}</p>
+                <p className="mini-source">{currentSong.source === 'ytmusic' ? 'YouTube Music' : 'JioSaavn'}</p>
               </div>
             </>
           ) : (

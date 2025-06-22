@@ -1,4 +1,3 @@
-// All backend API calls for Streamify
 import { auth } from './firebaseConfig';
 
 const API_BASE = import.meta.env.VITE_BACKEND_API_URL || '';
@@ -10,27 +9,38 @@ async function getToken() {
 }
 
 export async function searchSongs(query) {
-  const res = await fetch(`${API_BASE}/api/search/?q=${encodeURIComponent(query)}`);
+  const res = await fetch(`${API_BASE}/api/search/combined/?q=${encodeURIComponent(query)}`);
   const data = await res.json();
-  if (data && data.data && Array.isArray(data.data.results)) {
-    return data.data.results.map(song => ({
+  if (data && Array.isArray(data.results)) {
+    return data.results.map(song => ({
       id: song.id,
-      title: song.name,
-      artist: song.artists?.primary?.map(a => a.name).join(', ') || '',
-      cover: song.image?.find(img => img.quality === '150x150')?.url || song.image?.[0]?.url || '',
+      title: song.title,
+      artist: song.artist,
+      cover: song.cover,
+      source: song.source,
     }));
   }
   return [];
 }
 
-export async function getSongDetails(id) {
-  const res = await fetch(`${API_BASE}/api/song/?id=${encodeURIComponent(id)}`);
-  return res.json();
+export async function getSongDetails(id, source = 'jiosaavn') {
+  if (source === 'ytmusic') {
+    const res = await fetch(`${API_BASE}/api/ytmusic/song/?id=${encodeURIComponent(id)}`);
+    return res.json();
+  } else {
+    const res = await fetch(`${API_BASE}/api/song/?id=${encodeURIComponent(id)}`);
+    return res.json();
+  }
 }
 
-export async function downloadSong(id) {
-  const res = await fetch(`${API_BASE}/api/download/?id=${encodeURIComponent(id)}`);
-  return res.json();
+export async function downloadSong(id, source = 'jiosaavn') {
+  if (source === 'ytmusic') {
+    const res = await fetch(`${API_BASE}/api/ytmusic/download/?id=${encodeURIComponent(id)}`);
+    return res.json();
+  } else {
+    const res = await fetch(`${API_BASE}/api/download/?id=${encodeURIComponent(id)}`);
+    return res.json();
+  }
 }
 
 export async function likeSong(song) {

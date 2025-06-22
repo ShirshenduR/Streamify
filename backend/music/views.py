@@ -5,6 +5,8 @@ from rest_framework.decorators import api_view
 from .models import LikedSong, Playlist, PlaylistSong
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
+from .ytmusic_api import search_ytmusic, get_ytmusic_song, get_ytmusic_download
+from concurrent.futures import ThreadPoolExecutor
 
 JIOSAAVN_API = 'https://saavn.dev/api'
 
@@ -117,14 +119,20 @@ def liked_songs(request):
     if not user:
         return JsonResponse({'songs': []})
     liked = LikedSong.objects.filter(user=user).order_by('-added_at')
-    songs = [
-        {
+    songs = []
+    for s in liked:
+        # Guess source by id pattern: YTMusic ids are usually 11 chars, JioSaavn are longer
+        if len(s.song_id) == 11:
+            source = 'ytmusic'
+        else:
+            source = 'jiosaavn'
+        songs.append({
             'id': s.song_id,
             'title': s.title,
             'artist': s.artist,
-            'cover': s.cover
-        } for s in liked
-    ]
+            'cover': s.cover,
+            'source': source
+        })
     return JsonResponse({'songs': songs})
 
 @api_view(['GET', 'POST'])
@@ -161,3 +169,50 @@ def playlist_detail(request, playlist_id):
         } for s in playlist.songs.all()
     ]
     return JsonResponse({'id': playlist.id, 'name': playlist.name, 'songs': songs})
+
+@api_view(['GET'])
+def search_ytmusic_view(request):
+    query = request.GET.get('q')
+    data = search_ytmusic(query)
+    return JsonResponse(data, safe=False)
+
+@api_view(['GET'])
+def ytmusic_song_details(request):
+    video_id = request.GET.get('id')
+    data = get_ytmusic_song(video_id)
+    return JsonResponse(data, safe=False)
+
+@api_view(['GET'])
+def ytmusic_download_song(request):
+    video_id = request.GET.get('id')
+    data = get_ytmusic_download(video_id)
+    return JsonResponse(data, safe=False)
+
+@api_view(['GET'])
+def combined_search(request):
+    query = request.GET.get('q')
+    results = []
+    with ThreadPoolExecutor() as executor:
+        future_jio = executor.submit(lambda: requests.get(f'{JIOSAAVN_API}/search/songs', params={'query': query}).json())
+        future_yt = executor.submit(lambda: search_ytmusic(query))
+        jio_data = future_jio.result()
+        yt_data = future_yt.result()
+    if jio_data and jio_data.get('data') and isinstance(jio_data['data'].get('results'), list):
+        for song in jio_data['data']['results']:
+            results.append({
+                'id': song.get('id'),
+                'title': song.get('name'),
+                'artist': ', '.join([a['name'] for a in song.get('artists', {}).get('primary', [])]) if song.get('artists') else '',
+                'cover': next((img['url'] for img in song.get('image', []) if img.get('quality') == '150x150'), song.get('image', [{}])[0].get('url', '')),
+                'source': 'jiosaavn',
+            })
+    if yt_data and isinstance(yt_data.get('result'), list):
+        for song in yt_data['result']:
+            results.append({
+                'id': song.get('videoId'),
+                'title': song.get('title'),
+                'artist': song.get('artists', ''),
+                'cover': song.get('thumbnails', [{}])[-1].get('url', ''),
+                'source': 'ytmusic',
+            })
+    return JsonResponse({'results': results})

@@ -22,7 +22,7 @@ export function PlayerProvider({ children }) {
       return;
     }
     if (song.id) {
-      const data = await downloadSong(song.id);
+      const data = await downloadSong(song.id, song.source);
       const url = data.url || data.downloadUrl || data.audioUrl;
       if (!url) {
         return;
