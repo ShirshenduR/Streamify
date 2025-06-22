@@ -1,5 +1,5 @@
 // All backend API calls for Streamify
-import { auth } from './firebaseconfig';
+import { auth } from './firebaseConfig';
 
 const API_BASE = import.meta.env.VITE_BACKEND_API_URL || '';
 
