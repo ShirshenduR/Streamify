@@ -32,6 +32,17 @@ export default function Home({ showSearch, setShowSearch }) {
     }
   }, [searchQuery]);
 
+  useEffect(() => {
+    if (showSearch) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showSearch]);
+
   return (
     <div className="home-page">
       {showSearch && (
@@ -52,11 +63,13 @@ export default function Home({ showSearch, setShowSearch }) {
           </div>
         </div>
       )}
-      <h2 className="section-title">Recommended For You</h2>
-      <div className="song-grid">
-        {randomSongs.map(song => (
-          <SongCard key={song.id} song={song} onClick={playSong} />
-        ))}
+      <div className="home-content">
+        <h2 className="section-title">Recommended For You</h2>
+        <div className="song-grid">
+          {randomSongs.map(song => (
+            <SongCard key={song.id} song={song} onClick={playSong} />
+          ))}
+        </div>
       </div>
     </div>
   );

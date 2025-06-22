@@ -31,6 +31,8 @@ export default function Nowplaying({ open, onClose }) {
   const [dragProgress, setDragProgress] = React.useState(0);
   const [downloading, setDownloading] = React.useState(false);
   const [likeAnimating, setLikeAnimating] = React.useState(false);
+  const [playbackError, setPlaybackError] = React.useState(null);
+  const [jiosaavnAlternative, setJiosaavnAlternative] = React.useState(null);
 
   const progress = dragging
     ? dragProgress
@@ -115,6 +117,28 @@ export default function Nowplaying({ open, onClose }) {
     await likeSong(currentSong);
     setTimeout(() => setLikeAnimating(false), 500);
   };
+
+  // Try to play song, handle YTMusic error and search JioSaavn fallback
+  React.useEffect(() => {
+    setPlaybackError(null);
+    setJiosaavnAlternative(null);
+    if (!currentSong) return;
+    if (currentSong.source === 'ytmusic') {
+      // Listen for playback error event (customize as per your player logic)
+      const audio = document.querySelector('audio');
+      if (!audio) return;
+      const onError = async () => {
+        setPlaybackError('YouTube Music is currently unavailable due to restrictions.');
+        // Search for JioSaavn alternative
+        const { searchSongs } = await import('../utils/api');
+        const results = await searchSongs(`${currentSong.title} ${currentSong.artist}`);
+        const jio = results.find(s => s.source === 'jiosaavn');
+        if (jio) setJiosaavnAlternative(jio);
+      };
+      audio.addEventListener('error', onError);
+      return () => audio.removeEventListener('error', onError);
+    }
+  }, [currentSong]);
 
   if (!open) return null;
 
@@ -215,6 +239,18 @@ export default function Nowplaying({ open, onClose }) {
               <span className="truncate">{downloading ? 'Downloading...' : 'Download'}</span>
             </button>
           </div>
+          {playbackError && (
+            <div style={{color:'#ffb3b3',background:'#2a1a1a',padding:'1rem',borderRadius:'8px',margin:'1rem 0',textAlign:'center'}}>
+              <p>{playbackError}</p>
+              {jiosaavnAlternative ? (
+                <button style={{marginTop:'0.5rem'}} onClick={() => window.location.reload()}>
+                  Play on JioSaavn
+                </button>
+              ) : (
+                <p>Try searching for this song on JioSaavn or another source.</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

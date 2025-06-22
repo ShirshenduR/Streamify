@@ -1,9 +1,7 @@
 .home-page {
   background-color: #1c0f0f;
   min-height: 100vh;
-  max-height: 100vh;
   overflow-x: hidden;
-  overflow-y: auto;
   padding-bottom: 80px; /* More space for sticky MiniPlayer */
   font-family: 'Inter', sans-serif;
 }
@@ -173,11 +171,6 @@
   margin-bottom: 16px;
   background: #222;
   color: #fff;
-}
-
-.search-overlay-results {
-  max-height: 50vh;
-  overflow-y: auto;
 }
 
 .no-results {

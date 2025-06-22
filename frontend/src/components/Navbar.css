@@ -165,15 +165,15 @@
 }
 
 /* --- REMOVE EXTRA VERTICAL SCROLL ON HOME --- */
-.home-page {
+/* .home-page {
   background-color: #1c0f0f;
   min-height: 100vh;
   max-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
-  padding-bottom: 80px; /* More space for sticky MiniPlayer */
+  padding-bottom: 80px; 
   font-family: 'Inter', sans-serif;
-}
+} */
 
 /* --- REMOVE HORIZONTAL SCROLL IN SEARCH OVERLAY --- */
 .search-overlay-home {
