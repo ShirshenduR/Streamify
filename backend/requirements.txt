@@ -11,3 +11,4 @@ typing_extensions==4.14.0
 urllib3==2.5.0
 ytmusicapi>=1.3.0
 yt-dlp
+gunicorn
