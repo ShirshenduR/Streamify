@@ -182,7 +182,7 @@ export default function Nowplaying({ open, onClose }) {
             </div>
           </div>
           <div className="nowplaying-controls">
-            <button className="nowplaying-btn size-10" onClick={prevSong} disabled={currentIndex <= 0} aria-label="Previous">
+            <button className="nowplaying-btn size-10" onClick={prevSong} aria-label="Previous">
               <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" fill="currentColor" viewBox="0 0 256 256"><path d="M208,47.88V208.12a16,16,0,0,1-24.43,13.43L64,146.77V216a8,8,0,0,1-16,0V40a8,8,0,0,1,16,0v69.23L183.57,34.45A15.95,15.95,0,0,1,208,47.88Z"></path></svg>
             </button>
             <button className="nowplaying-btn size-10" onClick={() => seek(Math.max(0, currentTime - 10))} aria-label="Rewind">
@@ -201,7 +201,7 @@ export default function Nowplaying({ open, onClose }) {
             <button className="nowplaying-btn size-10" onClick={() => seek(Math.min(duration, currentTime + 10))} aria-label="FastForward">
               <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" fill="currentColor" viewBox="0 0 256 256"><path d="M248,128a15.76,15.76,0,0,1-7.33,13.34L152.48,197.5A15.91,15.91,0,0,1,128,184.16v-37.3L48.48,197.5A15.91,15.91,0,0,1,24,184.16V71.84A15.91,15.91,0,0,1,48.48,58.5L128,109.14V71.84A15.91,15.91,0,0,1,152.48,58.5l88.19,56.16A15.76,15.76,0,0,1,248,128Z"></path></svg>
             </button>
-            <button className="nowplaying-btn size-10" onClick={() => nextSong()} disabled={currentIndex >= playlist.length - 1} aria-label="Next">
+            <button className="nowplaying-btn size-10" onClick={() => nextSong()} aria-label="Next">
               <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" fill="currentColor" viewBox="0 0 256 256"><path d="M208,40V216a8,8,0,0,1-16,0V146.77L72.43,221.55A15.95,15.95,0,0,1,48,208.12V47.88A15.95,15.95,0,0,1,72.43,34.45L192,109.23V40a8,8,0,0,1,16,0Z"></path></svg>
             </button>
           </div>

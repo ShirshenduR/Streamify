@@ -14,8 +14,20 @@ export default function Home({ showSearch, setShowSearch }) {
 
   useEffect(() => {
     const letters = 'abcdefghijklmnopqrstuvwxyz';
-    const randomLetter = letters[Math.floor(Math.random() * letters.length)];
-    searchSongs(randomLetter).then(setRandomSongs);
+    
+    const fetchJioSaavnSongs = async () => {
+      let allSongs = [];
+      for (let i = 0; i < 3; i++) { 
+        const randomLetter = letters[Math.floor(Math.random() * letters.length)];
+        const results = await searchSongs(randomLetter);
+        
+        allSongs = allSongs.concat(results.filter(song => song.source === 'jiosaavn'));
+      }
+     
+      const uniqueSongs = Array.from(new Map(allSongs.map(s => [s.id, s])).values());
+      setRandomSongs(uniqueSongs.slice(0, 18)); // Show up to 18 unique JioSaavn songs
+    };
+    fetchJioSaavnSongs();
   }, []);
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import PlayerContext from './PlayerContext';
-import { downloadSong, getLikedSongs, likeSong as likeSongApi, unlikeSong as unlikeSongApi } from '../utils/api';
+import { downloadSong, getLikedSongs, likeSong as likeSongApi, unlikeSong as unlikeSongApi, searchSongs } from '../utils/api';
 
 export function PlayerProvider({ children }) {
   const [currentSong, setCurrentSong] = useState(null);
@@ -8,6 +8,8 @@ export function PlayerProvider({ children }) {
   const [playlist, setPlaylist] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [likedSongs, setLikedSongs] = useState([]);
+  const [playedSongIds, setPlayedSongIds] = useState([]);
+  const [history, setHistory] = useState([]); // Add history stack
   const audioRef = useRef(new window.Audio());
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -16,7 +18,7 @@ export function PlayerProvider({ children }) {
     getLikedSongs().then(data => setLikedSongs(data.songs || []));
   }, []);
 
-  const playSong = useCallback(async (song, songs = null) => {
+  const playSong = useCallback(async (song, songs = null, isPrev = false) => {
     let songToPlay = song;
     if (!song.id || typeof song.id !== 'string' || song.id.startsWith('http')) {
       return;
@@ -29,20 +31,32 @@ export function PlayerProvider({ children }) {
       }
       songToPlay = { ...song, url };
     }
+    let newPlaylist = songs;
+    let newIndex = 0;
     if (songs && Array.isArray(songs)) {
-      setPlaylist(songs);
-      setCurrentIndex(songs.findIndex(s => s.id === song.id));
+      newPlaylist = songs.filter((s, idx, arr) => arr.findIndex(ss => ss.id === s.id) === idx);
+      newIndex = newPlaylist.findIndex(s => s.id === song.id);
+      setPlaylist(newPlaylist);
+      setCurrentIndex(newIndex);
     } else {
       setPlaylist([songToPlay]);
       setCurrentIndex(0);
     }
+    if (!isPrev && currentSong) {
+      setHistory(prev => [...prev, currentSong]);
+    }
     setCurrentSong(songToPlay);
+    setPlayedSongIds(prev => [...prev, songToPlay.id]);
     const audio = audioRef.current;
     audio.src = songToPlay.url;
     audio.currentTime = 0;
-    audio.play();
-    setIsPlaying(true);
-  }, []);
+    try {
+      await audio.play();
+      setIsPlaying(true);
+    } catch {
+      setIsPlaying(false);
+    }
+  }, [currentSong]);
 
   const likeSongAndSync = useCallback(async (song) => {
     const isAlreadyLiked = likedSongs.some(s => s.id === song.id);
@@ -69,17 +83,48 @@ export function PlayerProvider({ children }) {
     setIsPlaying(true);
   }, []);
 
-  const nextSong = useCallback(() => {
-    if (playlist.length > 0 && currentIndex < playlist.length - 1) {
-      playSong(playlist[currentIndex + 1], playlist);
+  const getRandomSimilarSong = useCallback(async (currentSong) => {
+    let query = '';
+    if (currentSong && currentSong.artist) {
+      query = currentSong.artist.split(',')[0];
+    } else if (currentSong && currentSong.title) {
+      query = currentSong.title.split(' ')[0];
+    } else {
+      query = 'top';
     }
-  }, [playlist, currentIndex, playSong]);
+    let results = await searchSongs(query);
+    results = results.filter(s => s.source === 'jiosaavn' && s.id !== currentSong.id && !playedSongIds.includes(s.id));
+    if (results.length === 0) {
+      results = await searchSongs('top');
+      results = results.filter(s => s.source === 'jiosaavn' && s.id !== currentSong.id && !playedSongIds.includes(s.id));
+    }
+    if (results.length > 0) {
+      return results[Math.floor(Math.random() * results.length)];
+    }
+    return null;
+  }, [playedSongIds]);
 
-  const prevSong = useCallback(() => {
-    if (playlist.length > 0 && currentIndex > 0) {
-      playSong(playlist[currentIndex - 1], playlist);
+  const nextSong = useCallback(async () => {
+    if (currentSong) {
+      const next = await getRandomSimilarSong(currentSong);
+      if (next) {
+        await playSong(next);
+      }
     }
-  }, [playlist, currentIndex, playSong]);
+  }, [currentSong, playSong, getRandomSimilarSong]);
+
+  const prevSong = useCallback(async () => {
+    if (history.length > 0) {
+      const prev = history[history.length - 1];
+      setHistory(h => h.slice(0, -1));
+      await playSong(prev, null, true);
+    } else if (currentSong) {
+      const prev = await getRandomSimilarSong(currentSong);
+      if (prev) {
+        await playSong(prev, null, true);
+      }
+    }
+  }, [history, currentSong, playSong, getRandomSimilarSong]);
 
   const seek = useCallback((time) => {
     audioRef.current.currentTime = time;
