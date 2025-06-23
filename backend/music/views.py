@@ -51,6 +51,9 @@ def download_song(request):
                 song.get('perma_url') or
                 (song.get('url') if isinstance(song.get('url'), str) else None)
             )
+    # Force HTTPS for aac.saavncdn.com links
+    if url and url.startswith('http://aac.saavncdn.com'):
+        url = url.replace('http://', 'https://', 1)
     return JsonResponse({'url': url})
 
 @api_view(['POST'])
