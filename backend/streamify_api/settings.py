@@ -27,7 +27,7 @@ SECRET_KEY = "django-insecure-y_4opvl7!$l+otkas7i-!m%!9n%*0@_zz44mo3t4_6k_c-=e(8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['streamify-la6p.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['.onrender.com', 'localhost', '127.0.0.1']
 
 
 # Application definition
