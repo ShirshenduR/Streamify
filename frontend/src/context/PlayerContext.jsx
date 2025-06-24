@@ -146,6 +146,36 @@ export function PlayerProvider({ children }) {
     };
   }, [nextSong]);
 
+  useEffect(() => {
+    if ('mediaSession' in navigator && currentSong) {
+
+      let albumArt = null;
+      if (currentSong.cover && currentSong.cover.startsWith('http')) {
+        albumArt = currentSong.cover;
+      } else if (currentSong.imageUrl && currentSong.imageUrl.startsWith('http')) {
+        albumArt = currentSong.imageUrl;
+      } else if (currentSong.image && currentSong.image.startsWith('http')) {
+        albumArt = currentSong.image;
+      } else {
+        albumArt = 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Music_note.png';
+      }
+      navigator.mediaSession.metadata = new window.MediaMetadata({
+        title: currentSong.title || '',
+        artist: currentSong.artist || '',
+        album: currentSong.album || '',
+        artwork: [
+          { src: albumArt, sizes: '512x512', type: 'image/png' },
+          { src: albumArt, sizes: '256x256', type: 'image/png' },
+          { src: albumArt, sizes: '128x128', type: 'image/png' }
+        ]
+      });
+      navigator.mediaSession.setActionHandler('play', resumeSong);
+      navigator.mediaSession.setActionHandler('pause', pauseSong);
+      navigator.mediaSession.setActionHandler('previoustrack', prevSong);
+      navigator.mediaSession.setActionHandler('nexttrack', nextSong);
+    }
+  }, [currentSong, isPlaying, resumeSong, pauseSong, prevSong, nextSong]);
+
   return (
     <PlayerContext.Provider value={{
       currentSong,
