@@ -3,6 +3,7 @@ import yt_dlp
 import os
 import json
 import logging
+import tempfile
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -44,6 +45,21 @@ def get_ytmusic_song(video_id):
     except Exception as e:
         return {'error': str(e)}
 
+def write_cookies_txt_from_env(cookie_string):
+    cookies = [c.strip() for c in cookie_string.split(';') if '=' in c]
+    lines = []
+    for c in cookies:
+        name, value = c.split('=', 1)
+        # Format: domain, flag, path, secure, expiration, name, value
+        lines.append(
+            '\tmusic.youtube.com\tTRUE\t/\tTRUE\t9999999999\t{}\t{}'.format(name.strip(), value.strip())
+        )
+    content = '# Netscape HTTP Cookie File\n' + '\n'.join(lines)
+    tmp = tempfile.NamedTemporaryFile('w+', delete=False)
+    tmp.write(content)
+    tmp.flush()
+    return tmp.name
+
 def get_ytmusic_download(video_id):
     ytm_url = f'https://music.youtube.com/watch?v={video_id}'
     ydl_opts = {
@@ -53,6 +69,11 @@ def get_ytmusic_download(video_id):
         'forceurl': True,
         'noplaylist': True,
     }
+    cookie_string = os.environ.get('YTMUSIC_COOKIE')
+    cookie_file = None
+    if cookie_string:
+        cookie_file = write_cookies_txt_from_env(cookie_string)
+        ydl_opts['cookies'] = cookie_file
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
             info = ydl.extract_info(ytm_url, download=False)
@@ -60,3 +81,6 @@ def get_ytmusic_download(video_id):
             return {'url': url}
         except Exception as e:
             return {'error': str(e)}
+        finally:
+            if cookie_file:
+                os.unlink(cookie_file)
