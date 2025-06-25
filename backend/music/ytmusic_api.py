@@ -1,7 +1,24 @@
 from ytmusicapi import YTMusic
 import yt_dlp
+import os
+import json
+import logging
+from dotenv import load_dotenv
 
-yt = YTMusic()
+load_dotenv()
+
+# Load minified JSON headers from .env
+headers_json = os.getenv("YTMUSIC_HEADERS")
+yt = None
+if headers_json:
+    try:
+        headers_dict = json.loads(headers_json)
+        yt = YTMusic(auth=headers_dict)
+    except Exception as e:
+        logging.error(f"Failed to initialize YTMusic with env headers: {e}")
+        yt = YTMusic()
+else:
+    yt = YTMusic()
 
 def search_ytmusic(query):
     try:
