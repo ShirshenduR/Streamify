@@ -18,7 +18,7 @@
 * 📱 Fully responsive frontend (mobile-first)
 * 🏷️ Library page with liked songs and playlists (Playlist logic not implemented to implement in future)
 * 🔄 Real-time like/unlike sync across UI
-* 🌎 International music support via YouTube Music
+* 🌎 International music support via YouTube Music (ytmusic api and yt-dlp dont work on hosted use locally)
 
 ---
 
