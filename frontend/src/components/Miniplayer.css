@@ -37,12 +37,30 @@
   font-weight: 600;
   font-size: 0.9rem;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 .mini-artist {
   font-size: 0.8rem;
   color: #c4b3b3;
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.mini-source {
+  font-size: 0.75rem;
+  color: #a39090;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 .mini-controls {
