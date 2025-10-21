@@ -7,7 +7,6 @@ complete --command yt-dlp --long-option update-to --description 'Upgrade/downgra
 complete --command yt-dlp --long-option ignore-errors --short-option i --description 'Ignore download and postprocessing errors. The download will be considered successful even if the postprocessing fails'
 complete --command yt-dlp --long-option no-abort-on-error --description 'Continue with next video on download errors; e.g. to skip unavailable videos in a playlist (default)'
 complete --command yt-dlp --long-option abort-on-error --description 'Abort downloading of further videos if an error occurs (Alias: --no-ignore-errors)'
-complete --command yt-dlp --long-option dump-user-agent --description 'Display the current user-agent and exit'
 complete --command yt-dlp --long-option list-extractors --description 'List all supported extractors and exit'
 complete --command yt-dlp --long-option extractor-descriptions --description 'Output descriptions of all supported extractors and exit'
 complete --command yt-dlp --long-option use-extractors --description 'Extractor names to use separated by commas. You can also use regexes, "all", "default" and "end" (end URL matching); e.g. --ies "holodex.*,end,youtube". Prefix the name with a "-" to exclude it, e.g. --ies default,-generic. Use --list-extractors for a list of extractor names. (Alias: --ies)'
@@ -40,7 +39,6 @@ complete --command yt-dlp --long-option force-ipv4 --short-option 4 --descriptio
 complete --command yt-dlp --long-option force-ipv6 --short-option 6 --description 'Make all connections via IPv6'
 complete --command yt-dlp --long-option enable-file-urls --description 'Enable file:// URLs. This is disabled by default for security reasons.'
 complete --command yt-dlp --long-option geo-verification-proxy --description 'Use this proxy to verify the IP address for some geo-restricted sites. The default proxy specified by --proxy (or none, if the option is not present) is used for the actual downloading'
-complete --command yt-dlp --long-option cn-verification-proxy
 complete --command yt-dlp --long-option xff --description 'How to fake X-Forwarded-For HTTP header to try bypassing geographic restriction. One of "default" (only when known to be useful), "never", an IP block in CIDR notation, or a two-letter ISO 3166-2 country code'
 complete --command yt-dlp --long-option geo-bypass
 complete --command yt-dlp --long-option no-geo-bypass
@@ -74,8 +72,6 @@ complete --command yt-dlp --long-option break-on-reject
 complete --command yt-dlp --long-option break-per-input --description 'Alters --max-downloads, --break-on-existing, --break-match-filters, and autonumber to reset per input URL'
 complete --command yt-dlp --long-option no-break-per-input --description '--break-on-existing and similar options terminates the entire download queue'
 complete --command yt-dlp --long-option skip-playlist-after-errors --description 'Number of allowed failures until the rest of the playlist is skipped'
-complete --command yt-dlp --long-option include-ads
-complete --command yt-dlp --long-option no-include-ads
 complete --command yt-dlp --long-option concurrent-fragments --short-option N --description 'Number of fragments of a dash/hlsnative video that should be downloaded concurrently (default is %default)'
 complete --command yt-dlp --long-option limit-rate --short-option r --description 'Maximum download rate in bytes per second, e.g. 50K or 4.2M'
 complete --command yt-dlp --long-option throttled-rate --description 'Minimum download rate in bytes per second below which throttling is assumed and the video data is re-extracted, e.g. 100K'
@@ -97,13 +93,12 @@ complete --command yt-dlp --long-option no-playlist-reverse
 complete --command yt-dlp --long-option playlist-random --description 'Download playlist videos in random order'
 complete --command yt-dlp --long-option lazy-playlist --description 'Process entries in the playlist as they are received. This disables n_entries, --playlist-random and --playlist-reverse'
 complete --command yt-dlp --long-option no-lazy-playlist --description 'Process videos in the playlist only after the entire playlist is parsed (default)'
-complete --command yt-dlp --long-option xattr-set-filesize --description 'Set file xattribute ytdl.filesize with expected file size'
 complete --command yt-dlp --long-option hls-prefer-native
 complete --command yt-dlp --long-option hls-prefer-ffmpeg
 complete --command yt-dlp --long-option hls-use-mpegts --description 'Use the mpegts container for HLS videos; allowing some players to play the video while downloading, and reducing the chance of file corruption if download is interrupted. This is enabled by default for live streams'
 complete --command yt-dlp --long-option no-hls-use-mpegts --description 'Do not use the mpegts container for HLS videos. This is default when not downloading live streams'
 complete --command yt-dlp --long-option download-sections --description 'Download only chapters that match the regular expression. A "*" prefix denotes time-range instead of chapter. Negative timestamps are calculated from the end. "*from-url" can be used to download between the "start_time" and "end_time" extracted from the URL. Needs ffmpeg. This option can be used multiple times to download multiple sections, e.g. --download-sections "*10:15-inf" --download-sections "intro"'
-complete --command yt-dlp --long-option downloader --description 'Name or path of the external downloader to use (optionally) prefixed by the protocols (http, ftp, m3u8, dash, rstp, rtmp, mms) to use it for. Currently supports native, aria2c, avconv, axel, curl, ffmpeg, httpie, wget. You can use this option multiple times to set different downloaders for different protocols. E.g. --downloader aria2c --downloader "dash,m3u8:native" will use aria2c for http/ftp downloads, and the native downloader for dash/m3u8 downloads (Alias: --external-downloader)'
+complete --command yt-dlp --long-option downloader --description 'Name or path of the external downloader to use (optionally) prefixed by the protocols (http, ftp, m3u8, dash, rstp, rtmp, mms) to use it for. Currently supports native, aria2c, axel, curl, ffmpeg, httpie, wget. You can use this option multiple times to set different downloaders for different protocols. E.g. --downloader aria2c --downloader "dash,m3u8:native" will use aria2c for http/ftp downloads, and the native downloader for dash/m3u8 downloads (Alias: --external-downloader)'
 complete --command yt-dlp --long-option downloader-args --description 'Give these arguments to the external downloader. Specify the downloader name and the arguments separated by a colon ":". For ffmpeg, arguments can be passed to different positions using the same syntax as --postprocessor-args. You can use this option multiple times to give different arguments to different downloaders (Alias: --external-downloader-args)'
 complete --command yt-dlp --long-option batch-file --short-option a --description 'File containing URLs to download ("-" for stdin), one URL per line. Lines starting with "#", ";" or "]" are considered as comments and ignored' --require-parameter
 complete --command yt-dlp --long-option no-batch-file --description 'Do not read URLs from batch file (default)'
@@ -125,14 +120,12 @@ complete --command yt-dlp --long-option continue --short-option c --description 
 complete --command yt-dlp --long-option no-continue --description 'Do not resume partially downloaded fragments. If the file is not fragmented, restart download of the entire file'
 complete --command yt-dlp --long-option part --description 'Use .part files instead of writing directly into output file (default)'
 complete --command yt-dlp --long-option no-part --description 'Do not use .part files - write directly into output file'
-complete --command yt-dlp --long-option mtime --description 'Use the Last-modified header to set the file modification time (default)'
-complete --command yt-dlp --long-option no-mtime --description 'Do not use the Last-modified header to set the file modification time'
+complete --command yt-dlp --long-option mtime --description 'Use the Last-modified header to set the file modification time'
+complete --command yt-dlp --long-option no-mtime --description 'Do not use the Last-modified header to set the file modification time (default)'
 complete --command yt-dlp --long-option write-description --description 'Write video description to a .description file'
 complete --command yt-dlp --long-option no-write-description --description 'Do not write video description (default)'
 complete --command yt-dlp --long-option write-info-json --description 'Write video metadata to a .info.json file (this may contain personal information)'
 complete --command yt-dlp --long-option no-write-info-json --description 'Do not write video metadata (default)'
-complete --command yt-dlp --long-option write-annotations
-complete --command yt-dlp --long-option no-write-annotations
 complete --command yt-dlp --long-option write-playlist-metafiles --description 'Write playlist metadata in addition to the video metadata when using --write-info-json, --write-description etc. (default)'
 complete --command yt-dlp --long-option no-write-playlist-metafiles --description 'Do not write playlist metadata when using --write-info-json, --write-description etc.'
 complete --command yt-dlp --long-option clean-info-json --description 'Remove some internal metadata such as filenames from the infojson (default)'
@@ -187,10 +180,7 @@ complete --command yt-dlp --long-option verbose --short-option v --description '
 complete --command yt-dlp --long-option dump-pages --description 'Print downloaded pages encoded using base64 to debug problems (very verbose)'
 complete --command yt-dlp --long-option write-pages --description 'Write downloaded intermediary pages to files in the current directory to debug problems'
 complete --command yt-dlp --long-option load-pages
-complete --command yt-dlp --long-option youtube-print-sig-code
 complete --command yt-dlp --long-option print-traffic --description 'Display sent and read HTTP traffic'
-complete --command yt-dlp --long-option call-home --short-option C
-complete --command yt-dlp --long-option no-call-home
 complete --command yt-dlp --long-option encoding --description 'Force the specified encoding (experimental)'
 complete --command yt-dlp --long-option legacy-server-connect --description 'Explicitly allow HTTPS connection to servers that do not support RFC 5746 secure renegotiation'
 complete --command yt-dlp --long-option no-check-certificates --description 'Suppress HTTPS certificate validation'
@@ -271,8 +261,6 @@ complete --command yt-dlp --long-option replace-in-metadata --description 'Repla
 complete --command yt-dlp --long-option xattrs --description 'Write metadata to the video file'"'"'s xattrs (using Dublin Core and XDG standards)'
 complete --command yt-dlp --long-option concat-playlist --description 'Concatenate videos in a playlist. One of "never", "always", or "multi_video" (default; only when the videos form a single show). All the video files must have the same codecs and number of streams to be concatenable. The "pl_video:" prefix can be used with "--paths" and "--output" to set the output filename for the concatenated files. See "OUTPUT TEMPLATE" for details'
 complete --command yt-dlp --long-option fixup --description 'Automatically correct known faults of the file. One of never (do nothing), warn (only emit a warning), detect_or_warn (the default; fix the file if we can, warn otherwise), force (try fixing even if the file already exists)'
-complete --command yt-dlp --long-option prefer-avconv
-complete --command yt-dlp --long-option prefer-ffmpeg
 complete --command yt-dlp --long-option ffmpeg-location --description 'Location of the ffmpeg binary; either the path to the binary or its containing directory'
 complete --command yt-dlp --long-option exec --description 'Execute a command, optionally prefixed with when to execute it, separated by a ":". Supported values of "WHEN" are the same as that of --use-postprocessor (default: after_move). The same syntax as the output template can be used to pass any field as arguments to the command. If no fields are passed, %(filepath,_filename|)q is appended to the end of the command. This option can be used multiple times'
 complete --command yt-dlp --long-option no-exec --description 'Remove any previously defined --exec'
@@ -292,24 +280,12 @@ complete --command yt-dlp --long-option sponsorblock-remove --description 'Spons
 complete --command yt-dlp --long-option sponsorblock-chapter-title --description 'An output template for the title of the SponsorBlock chapters created by --sponsorblock-mark. The only available fields are start_time, end_time, category, categories, name, category_names. Defaults to "%default"'
 complete --command yt-dlp --long-option no-sponsorblock --description 'Disable both --sponsorblock-mark and --sponsorblock-remove'
 complete --command yt-dlp --long-option sponsorblock-api --description 'SponsorBlock API location, defaults to %default'
-complete --command yt-dlp --long-option sponskrub
-complete --command yt-dlp --long-option no-sponskrub
-complete --command yt-dlp --long-option sponskrub-cut
-complete --command yt-dlp --long-option no-sponskrub-cut
-complete --command yt-dlp --long-option sponskrub-force
-complete --command yt-dlp --long-option no-sponskrub-force
-complete --command yt-dlp --long-option sponskrub-location
-complete --command yt-dlp --long-option sponskrub-args
 complete --command yt-dlp --long-option extractor-retries --description 'Number of retries for known extractor errors (default is %default), or "infinite"'
 complete --command yt-dlp --long-option allow-dynamic-mpd --description 'Process dynamic DASH manifests (default) (Alias: --no-ignore-dynamic-mpd)'
 complete --command yt-dlp --long-option ignore-dynamic-mpd --description 'Do not process dynamic DASH manifests (Alias: --no-allow-dynamic-mpd)'
 complete --command yt-dlp --long-option hls-split-discontinuity --description 'Split HLS playlists to different formats at discontinuities such as ad breaks'
 complete --command yt-dlp --long-option no-hls-split-discontinuity --description 'Do not split HLS playlists into different formats at discontinuities such as ad breaks (default)'
 complete --command yt-dlp --long-option extractor-args --description 'Pass ARGS arguments to the IE_KEY extractor. See "EXTRACTOR ARGUMENTS" for details. You can use this option multiple times to give arguments for different extractors'
-complete --command yt-dlp --long-option youtube-include-dash-manifest
-complete --command yt-dlp --long-option youtube-skip-dash-manifest
-complete --command yt-dlp --long-option youtube-include-hls-manifest
-complete --command yt-dlp --long-option youtube-skip-hls-manifest
 
 
 complete --command yt-dlp --arguments ":ytfavorites :ytrecommended :ytsubscriptions :ytwatchlater :ythistory"

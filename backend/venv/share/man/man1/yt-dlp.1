@@ -65,9 +65,6 @@ to skip unavailable videos in a playlist (default)
 Abort downloading of further videos if an error occurs (Alias:
 --no-ignore-errors)
 .TP
---dump-user-agent
-Display the current user-agent and exit
-.TP
 --list-extractors
 List all supported extractors and exit
 .TP
@@ -414,9 +411,6 @@ This disables n_entries, --playlist-random and --playlist-reverse
 Process videos in the playlist only after the entire playlist is parsed
 (default)
 .TP
---xattr-set-filesize
-Set file xattribute ytdl.filesize with expected file size
-.TP
 --hls-use-mpegts
 Use the mpegts container for HLS videos; allowing some players to play
 the video while downloading, and reducing the chance of file corruption
@@ -442,8 +436,7 @@ e.g.
 --downloader \f[I][PROTO:]NAME\f[R]
 Name or path of the external downloader to use (optionally) prefixed by
 the protocols (http, ftp, m3u8, dash, rstp, rtmp, mms) to use it for.
-Currently supports native, aria2c, avconv, axel, curl, ffmpeg, httpie,
-wget.
+Currently supports native, aria2c, axel, curl, ffmpeg, httpie, wget.
 You can use this option multiple times to set different downloaders for
 different protocols.
 E.g.
@@ -528,10 +521,11 @@ Use .part files instead of writing directly into output file (default)
 Do not use .part files - write directly into output file
 .TP
 --mtime
-Use the Last-modified header to set the file modification time (default)
+Use the Last-modified header to set the file modification time
 .TP
 --no-mtime
 Do not use the Last-modified header to set the file modification time
+(default)
 .TP
 --write-description
 Write video description to a .description file
@@ -1275,7 +1269,7 @@ See also: Notes about environment variables
 .PP
 E.g.
 with the following configuration file, yt-dlp will always extract the
-audio, not copy the mtime, use a proxy and save all videos under
+audio, copy the mtime, use a proxy and save all videos under
 \f[V]YouTube\f[R] directory in your home directory:
 .IP
 .nf
@@ -1285,8 +1279,8 @@ audio, not copy the mtime, use a proxy and save all videos under
 # Always extract audio
 -x
 
-# Do not copy the mtime
---no-mtime
+# Copy the mtime
+--mtime
 
 # Use this proxy
 --proxy 127.0.0.1:3128
@@ -2668,8 +2662,8 @@ The currently available clients are \f[V]web\f[R], \f[V]web_safari\f[R],
 \f[V]web_embedded\f[R], \f[V]web_music\f[R], \f[V]web_creator\f[R],
 \f[V]mweb\f[R], \f[V]ios\f[R], \f[V]android\f[R], \f[V]android_vr\f[R],
 \f[V]tv\f[R], \f[V]tv_simply\f[R] and \f[V]tv_embedded\f[R].
-By default, \f[V]tv,ios,web\f[R] is used, or \f[V]tv,web\f[R] is used
-when authenticating with cookies.
+By default, \f[V]tv,web_safari,web\f[R] is used, and
+\f[V]tv,web_creator,web\f[R] is used with premium accounts.
 The \f[V]web_music\f[R] client is added for \f[V]music.youtube.com\f[R]
 URLs when logged-in cookies are used.
 The \f[V]web_embedded\f[R] client is added for age-restricted videos but
@@ -2697,18 +2691,29 @@ formats or metadata.
 See #860 (https://github.com/yt-dlp/yt-dlp/pull/860) and
 #12826 (https://github.com/yt-dlp/yt-dlp/issues/12826) for more details
 .IP \[bu] 2
+\f[V]webpage_skip\f[R]: Skip extraction of embedded webpage data.
+One or both of \f[V]player_response\f[R], \f[V]initial_data\f[R].
+These options are for testing purposes and don\[aq]t skip any network
+requests
+.IP \[bu] 2
 \f[V]player_params\f[R]: YouTube player parameters to use for player
 requests.
 Will overwrite any default ones set by yt-dlp.
 .IP \[bu] 2
 \f[V]player_js_variant\f[R]: The player javascript variant to use for
-signature and nsig deciphering.
-The known variants are: \f[V]main\f[R], \f[V]tce\f[R], \f[V]tv\f[R],
-\f[V]tv_es6\f[R], \f[V]phone\f[R], \f[V]tablet\f[R].
-Only \f[V]main\f[R] is recommended as a possible workaround; the others
-are for debugging purposes.
-The default is to use what is prescribed by the site, and can be
-selected with \f[V]actual\f[R]
+n/sig deciphering.
+The known variants are: \f[V]main\f[R], \f[V]tcc\f[R], \f[V]tce\f[R],
+\f[V]es5\f[R], \f[V]es6\f[R], \f[V]tv\f[R], \f[V]tv_es6\f[R],
+\f[V]phone\f[R], \f[V]tablet\f[R].
+The default is \f[V]main\f[R], and the others are for debugging
+purposes.
+You can use \f[V]actual\f[R] to go with what is prescribed by the site
+.IP \[bu] 2
+\f[V]player_js_version\f[R]: The player javascript version to use for
+n/sig deciphering, in the format of
+\f[V]signature_timestamp\[at]hash\f[R].
+Currently, the default is to force \f[V]20348\[at]0004de42\f[R].
+You can use \f[V]actual\f[R] to go with what is prescribed by the site
 .IP \[bu] 2
 \f[V]comment_sort\f[R]: \f[V]top\f[R] or \f[V]new\f[R] (default) -
 choose comment sorting mode (on YouTube\[aq]s side)
@@ -2775,6 +2780,11 @@ One of \f[V]always\f[R] (always try fetch a PO Token regardless if the
 client requires one for the given context), \f[V]never\f[R] (never fetch
 a PO Token), or \f[V]auto\f[R] (default; only fetch a PO Token if the
 client requires one for the given context)
+.IP \[bu] 2
+\f[V]playback_wait\f[R]: Duration (in seconds) to wait inbetween the
+extraction and download stages in order to ensure the formats are
+available.
+The default is \f[V]6\f[R] seconds
 .SS youtubepot-webpo
 .IP \[bu] 2
 \f[V]bind_to_visitor_id\f[R]: Whether to use the Visitor ID instead of
@@ -2983,6 +2993,24 @@ Default is \f[V]asc\f[R]
 .IP \[bu] 2
 \f[V]backend\f[R]: Backend API to use for extraction - one of
 \f[V]streaks\f[R] (default) or \f[V]brightcove\f[R] (deprecated)
+.SS vimeo
+.IP \[bu] 2
+\f[V]client\f[R]: Client to extract video data from.
+The currently available clients are \f[V]android\f[R], \f[V]ios\f[R],
+and \f[V]web\f[R].
+Only one client can be used.
+The \f[V]web\f[R] client is used by default.
+The \f[V]web\f[R] client only works with account cookies or login
+credentials.
+The \f[V]android\f[R] and \f[V]ios\f[R] clients only work with
+previously cached OAuth tokens
+.IP \[bu] 2
+\f[V]original_format_policy\f[R]: Policy for when to try extracting
+original formats.
+One of \f[V]always\f[R], \f[V]never\f[R], or \f[V]auto\f[R].
+The default \f[V]auto\f[R] policy tries to avoid exceeding the web
+client\[aq]s API rate-limit by only making an extra request when Vimeo
+publicizes the video\[aq]s downloadability
 .PP
 \f[B]Note\f[R]: These options may be changed/removed in the future
 without concern for backward compatibility
@@ -3074,9 +3102,14 @@ yt-dlp --update-to nightly
 python3 -m pip install -U --pre \[dq]yt-dlp[default]\[dq]
 \f[R]
 .fi
+.PP
+When running a yt-dlp version that is older than 90 days, you will see a
+warning message suggesting to update to the latest version.
+You can suppress this warning by adding \f[V]--no-update\f[R] to your
+command or configuration file.
 .SS DEPENDENCIES
 .PP
-Python versions 3.9+ (CPython) and 3.10+ (PyPy) are supported.
+Python versions 3.9+ (CPython) and 3.11+ (PyPy) are supported.
 Other versions and implementations may or may not work correctly.
 .PP
 While all the other dependencies are optional, \f[V]ffmpeg\f[R] and
@@ -3141,8 +3174,9 @@ MIT (https://github.com/lexiforest/curl_cffi/blob/main/LICENSE)
 Can be installed with the \f[V]curl-cffi\f[R] group, e.g.
 \f[V]pip install \[dq]yt-dlp[default,curl-cffi]\[dq]\f[R]
 .IP \[bu] 2
-Currently included in \f[V]yt-dlp.exe\f[R], \f[V]yt-dlp_linux\f[R] and
-\f[V]yt-dlp_macos\f[R] builds
+Currently included in most builds \f[I]except\f[R] \f[V]yt-dlp\f[R]
+(Unix zipimport binary), \f[V]yt-dlp_x86\f[R] (Windows 32-bit) and
+\f[V]yt-dlp_musllinux_aarch64\f[R]
 .RE
 .SS Metadata
 .IP \[bu] 2
@@ -3160,7 +3194,7 @@ GPLv2+ (https://github.com/wez/atomicparsley/blob/master/COPYING)
 \f[B]xattr\f[R] (https://github.com/xattr/xattr),
 \f[B]pyxattr\f[R] (https://github.com/iustin/pyxattr) or
 \f[B]setfattr\f[R] (http://savannah.nongnu.org/projects/attr) - For
-writing xattr metadata (\f[V]--xattr\f[R]) on \f[B]Mac\f[R] and
+writing xattr metadata (\f[V]--xattrs\f[R]) on \f[B]Mac\f[R] and
 \f[B]BSD\f[R].
 Licensed under
 MIT (https://github.com/xattr/xattr/blob/master/LICENSE.txt),
@@ -3188,15 +3222,6 @@ BSD-3-Clause (https://github.com/mitya57/secretstorage/blob/master/LICENSE)
 .IP \[bu] 2
 Any external downloader that you want to use with \f[V]--downloader\f[R]
 .SS Deprecated
-.IP \[bu] 2
-\f[B]avconv\f[R] and \f[B]avprobe\f[R] (https://www.libav.org) - Now
-\f[B]deprecated\f[R] alternative to ffmpeg.
-License depends on the build (https://libav.org/legal)
-.IP \[bu] 2
-\f[B]sponskrub\f[R] (https://github.com/faissaloo/SponSkrub) - For using
-the now \f[B]deprecated\f[R] sponskrub options.
-Licensed under
-GPLv3+ (https://github.com/faissaloo/SponSkrub/blob/master/LICENCE.md)
 .IP \[bu] 2
 \f[B]rtmpdump\f[R] (http://rtmpdump.mplayerhq.hu) - For downloading
 \f[V]rtmp\f[R] streams.
@@ -3713,9 +3738,6 @@ Download livestreams from the start using \f[V]--live-from-start\f[R]
 .IP \[bu] 2
 Channel URLs download all uploads of the channel, including shorts and
 live
-.IP \[bu] 2
-Support for logging in with
-OAuth (https://github.com/yt-dlp/yt-dlp/wiki/Extractors#logging-in-with-oauth)
 .RE
 .IP \[bu] 2
 \f[B]Cookies from browser\f[R]: Cookies can be automatically extracted
@@ -3960,6 +3982,11 @@ The sub-modules \f[V]swfinterp\f[R], \f[V]casefold\f[R] are removed.
 Passing \f[V]--simulate\f[R] (or calling \f[V]extract_info\f[R] with
 \f[V]download=False\f[R]) no longer alters the default format selection.
 See #9843 (https://github.com/yt-dlp/yt-dlp/issues/9843) for details.
+.IP \[bu] 2
+yt-dlp no longer applies the server modified time to downloaded files by
+default.
+Use \f[V]--mtime\f[R] or \f[V]--compat-options mtime-by-default\f[R] to
+revert this.
 .PP
 For ease of use, a few more compat options are available:
 .IP \[bu] 2
@@ -3981,7 +4008,8 @@ this!\f[R])
 \f[V]--compat-options 2023\f[R]: Same as
 \f[V]--compat-options 2024,prefer-vp9-sort\f[R]
 .IP \[bu] 2
-\f[V]--compat-options 2024\f[R]: Currently does nothing.
+\f[V]--compat-options 2024\f[R]: Same as
+\f[V]--compat-options mtime-by-default\f[R].
 Use this to enable all future compat options
 .PP
 The following compat options restore vulnerable behavior from before
@@ -4067,11 +4095,7 @@ are other alternatives to achieve the same
 --hls-prefer-native              --downloader \[dq]m3u8:native\[dq]
 --hls-prefer-ffmpeg              --downloader \[dq]m3u8:ffmpeg\[dq]
 --list-formats-old               --compat-options list-formats (Alias: --no-list-formats-as-table)
---list-formats-as-table          --compat-options -list-formats [Default] (Alias: --no-list-formats-old)
---youtube-skip-dash-manifest     --extractor-args \[dq]youtube:skip=dash\[dq] (Alias: --no-youtube-include-dash-manifest)
---youtube-skip-hls-manifest      --extractor-args \[dq]youtube:skip=hls\[dq] (Alias: --no-youtube-include-hls-manifest)
---youtube-include-dash-manifest  Default (Alias: --no-youtube-skip-dash-manifest)
---youtube-include-hls-manifest   Default (Alias: --no-youtube-skip-hls-manifest)
+--list-formats-as-table          --compat-options -list-formats [Default]
 --geo-bypass                     --xff \[dq]default\[dq]
 --no-geo-bypass                  --xff \[dq]never\[dq]
 --geo-bypass-country CODE        --xff CODE
@@ -4086,7 +4110,6 @@ These options are not intended to be used by the end-user
 \f[C]
 --test                           Download only part of video for testing extractors
 --load-pages                     Load pages dumped by --write-pages
---youtube-print-sig-code         For testing youtube signatures
 --allow-unplayable-formats       List unplayable formats also
 --no-allow-unplayable-formats    Default
 \f[R]
@@ -4097,13 +4120,8 @@ These are aliases that are no longer documented for various reasons
 .IP
 .nf
 \f[C]
---avconv-location                --ffmpeg-location
 --clean-infojson                 --clean-info-json
---cn-verification-proxy URL      --geo-verification-proxy URL
---dump-headers                   --print-traffic
---dump-intermediate-pages        --dump-pages
 --force-write-download-archive   --force-write-archive
---load-info                      --load-info-json
 --no-clean-infojson              --no-clean-info-json
 --no-split-tracks                --no-split-chapters
 --no-write-srt                   --no-write-subs
@@ -4119,7 +4137,7 @@ These are aliases that are no longer documented for various reasons
 .SS Sponskrub Options
 .PP
 Support for SponSkrub (https://github.com/faissaloo/SponSkrub) has been
-deprecated in favor of the \f[V]--sponsorblock\f[R] options
+removed in favor of the \f[V]--sponsorblock\f[R] options
 .IP
 .nf
 \f[C]
@@ -4147,6 +4165,17 @@ These options may no longer work as intended
 --no-include-ads                 Default
 --write-annotations              No supported site has annotations now
 --no-write-annotations           Default
+--avconv-location                Removed alias for --ffmpeg-location
+--cn-verification-proxy URL      Removed alias for --geo-verification-proxy URL
+--dump-headers                   Removed alias for --print-traffic
+--dump-intermediate-pages        Removed alias for --dump-pages
+--youtube-skip-dash-manifest     Removed alias for --extractor-args \[dq]youtube:skip=dash\[dq] (Alias: --no-youtube-include-dash-manifest)
+--youtube-skip-hls-manifest      Removed alias for --extractor-args \[dq]youtube:skip=hls\[dq] (Alias: --no-youtube-include-hls-manifest)
+--youtube-include-dash-manifest  Default (Alias: --no-youtube-skip-dash-manifest)
+--youtube-include-hls-manifest   Default (Alias: --no-youtube-skip-hls-manifest)
+--youtube-print-sig-code         Removed testing functionality
+--dump-user-agent                No longer supported
+--xattr-set-filesize             No longer supported
 --compat-options seperate-video-versions  No longer needed
 --compat-options no-youtube-prefer-utc-upload-date  No longer supported
 \f[R]
