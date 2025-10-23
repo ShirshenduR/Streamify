@@ -38,8 +38,8 @@
 /* Spotify-style song card grid */
 .song-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 28px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 24px;
   padding: 0 24px 24px 24px;
 }
 
@@ -100,4 +100,76 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.song-card-source {
+  color: #9a7878;
+  font-size: 0.85rem;
+  font-weight: 400;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Responsive adjustments for tablets and mobile */
+@media (max-width: 768px) {
+  .song-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+    padding: 0 16px 16px 16px;
+  }
+
+  .song-card-spotify {
+    padding: 14px 12px 12px 12px;
+    border-radius: 12px;
+  }
+
+  .song-card-title {
+    font-size: 0.95rem;
+  }
+
+  .song-card-artist {
+    font-size: 0.88rem;
+  }
+
+  .song-card-source {
+    font-size: 0.8rem;
+  }
+}
+
+/* Mobile-specific: optimized for small screens */
+@media (max-width: 480px) {
+  .song-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    padding: 0 12px 12px 12px;
+  }
+
+  .song-card-spotify {
+    padding: 12px 10px 10px 10px;
+    border-radius: 10px;
+  }
+
+  .song-card-img-wrap {
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+
+  .song-card-img {
+    border-radius: 10px;
+  }
+
+  .song-card-title {
+    font-size: 0.9rem;
+    margin-bottom: 1px;
+  }
+
+  .song-card-artist {
+    font-size: 0.82rem;
+  }
+
+  .song-card-source {
+    font-size: 0.75rem;
+  }
 }
