@@ -31,6 +31,10 @@ DEBUG = os.environ["DEBUG"]
 
 ALLOWED_HOSTS = ['.onrender.com', 'localhost', '127.0.0.1']
 
+CSRF_TRUSTED_ORIGINS = ['.onrender.com', 'localhost', '127.0.0.1']
+
+CORS_ORIGIN_WHITELIST = ['.onrender.com', 'localhost', '127.0.0.1']
+
 
 # Application definition
 
