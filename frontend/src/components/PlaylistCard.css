@@ -71,3 +71,39 @@
   color: #c89393;
   font-size: 0.95rem;
 }
+
+/* Responsive adjustments for tablets and mobile */
+@media (max-width: 768px) {
+  .playlist-card {
+    max-width: 100%;
+    padding: 14px 12px 12px 12px;
+    border-radius: 14px;
+  }
+
+  .playlist-title {
+    font-size: 1rem;
+  }
+
+  .playlist-count {
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .playlist-card {
+    padding: 12px 10px 10px 10px;
+    border-radius: 12px;
+  }
+
+  .playlist-art-collage {
+    margin-bottom: 10px;
+  }
+
+  .playlist-title {
+    font-size: 0.95rem;
+  }
+
+  .playlist-count {
+    font-size: 0.85rem;
+  }
+}

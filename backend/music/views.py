@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .ytmusic_api import search_ytmusic, get_ytmusic_song, get_ytmusic_download
 from concurrent.futures import ThreadPoolExecutor
 
-JIOSAAVN_API = 'https://saavn.dev/api'
+JIOSAAVN_API = 'https://saavn.sumit.co/api'
 
 @api_view(['GET'])
 def search_songs(request):
