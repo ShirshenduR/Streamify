@@ -62,11 +62,6 @@ Streamify/
 
 ### 🔧 Frontend Setup (React + Vite)
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
 
 > Create a `.env` file inside `frontend/` with your Firebase config:
 
@@ -78,6 +73,12 @@ VITE_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 VITE_BACKEND_API_URL=http://localhost:8000
+```
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
 ---
