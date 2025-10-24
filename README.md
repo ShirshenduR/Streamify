@@ -8,27 +8,27 @@
 
 ## ✨ Features
 
-* 🔐 Google login (via Firebase)
-* 🔍 Search for songs, albums, artists (JioSaavn API & YouTube Music)
-* ▶️ Stream music with a modern, mobile-friendly player (NowPlaying & MiniPlayer overlays)
-* ❤️ Like/unlike songs (per user, synced with backend)
-* 📂 Create & manage custom playlists
-* ⬇️ Download tracks with 1-click
-* 🌓 Dark themed, Figma-inspired UI
-* 📱 Fully responsive frontend (mobile-first)
-* 🏷️ Library page with liked songs and playlists (Playlist logic not implemented to implement in future)
-* 🔄 Real-time like/unlike sync across UI
-* 🌎 International music support via YouTube Music (ytmusic api and yt-dlp dont work on hosted use locally)
+- 🔐 Google login (via Firebase)
+- 🔍 Search for songs, albums, artists (JioSaavn API & YouTube Music)
+- ▶️ Stream music with a modern, mobile-friendly player (NowPlaying & MiniPlayer overlays)
+- ❤️ Like/unlike songs (per user, synced with backend)
+- 📂 Create & manage custom playlists
+- ⬇️ Download tracks with 1-click
+- 🌓 Dark themed, Figma-inspired UI
+- 📱 Fully responsive frontend (mobile-first)
+- 🏷️ Library page with liked songs and playlists (Playlist logic not implemented to implement in future)
+- 🔄 Real-time like/unlike sync across UI
+- 🌎 International music support via YouTube Music (ytmusic api and yt-dlp dont work on hosted use locally)
 
 ---
 
 ## 🧑‍💻 Tech Stack
 
-| Layer     | Stack                                                                 |
-| --------- | --------------------------------------------------------------------- |
-| Frontend  | React, Vite, Plain CSS                                               |
-| Backend   | Django, Django REST Framework                                        |
-| Auth      | Firebase Authentication (Google login)                               |
+| Layer     | Stack                                                                                                                                                                  |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend  | React, Vite, Plain CSS                                                                                                                                                 |
+| Backend   | Django, Django REST Framework                                                                                                                                          |
+| Auth      | Firebase Authentication (Google login)                                                                                                                                 |
 | Music API | [Unofficial JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api), [ytmusicapi](https://github.com/sigma67/ytmusicapi), [yt-dlp](https://github.com/yt-dlp/yt-dlp) |
 
 ---
@@ -62,11 +62,6 @@ Streamify/
 
 ### 🔧 Frontend Setup (React + Vite)
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
 
 > Create a `.env` file inside `frontend/` with your Firebase config:
 
@@ -78,6 +73,12 @@ VITE_FIREBASE_STORAGE_BUCKET=your_project_id.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 VITE_BACKEND_API_URL=http://localhost:8000
+```
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
 ---
@@ -108,24 +109,24 @@ SECRET_KEY=your-secret
 You are using the **hosted API**, so no need to self-host. Endpoints used:
 
 ```
-GET https://saavn.dev/api/search/songs?query=kesariya
-GET https://saavn.dev/api/songs?id=SONG_ID
+GET https://saavn.sumit.co/api/search/songs?query=kesariya
+GET https://saavn.sumit.co/api/songs?ids=SONG_ID
 ```
 
 ---
 
 ## 🧠 Backend API Overview
 
-| Endpoint                    | Method   | Description                |
-| --------------------------- | -------- | -------------------------- |
-| `/api/search/`              | GET      | Search for songs           |
-| `/api/song/`                | GET      | Get stream URL + details   |
-| `/api/download/`            | GET      | Download link to song      |
-| `/api/like/`                | POST     | Like or unlike a song      |
-| `/api/unlike/`              | POST     | Remove song from liked     |
-| `/api/liked/`               | GET      | Get user's liked songs     |
-| `/api/playlists/`           | GET/POST | Get or create playlists    |
-| `/api/playlists/<id>/`      | PATCH    | Update playlist name       |
+| Endpoint               | Method   | Description              |
+| ---------------------- | -------- | ------------------------ |
+| `/api/search/`         | GET      | Search for songs         |
+| `/api/song/`           | GET      | Get stream URL + details |
+| `/api/download/`       | GET      | Download link to song    |
+| `/api/like/`           | POST     | Like or unlike a song    |
+| `/api/unlike/`         | POST     | Remove song from liked   |
+| `/api/liked/`          | GET      | Get user's liked songs   |
+| `/api/playlists/`      | GET/POST | Get or create playlists  |
+| `/api/playlists/<id>/` | PATCH    | Update playlist name     |
 
 ---
 
@@ -145,9 +146,9 @@ This project is intended only for **learning and demonstration**. No music is st
 
 ## 🙌 Credits
 
-* 🎧 API: [Sumit Kolhe's JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api)
-* 🎵 YouTube Music integration: [ytmusicapi](https://github.com/sigma67/ytmusicapi) by sigma67
-* ⬇️ Audio extraction: [yt-dlp](https://github.com/yt-dlp/yt-dlp) by the yt-dlp contributors
+- 🎧 API: [Sumit Kolhe's JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api)
+- 🎵 YouTube Music integration: [ytmusicapi](https://github.com/sigma67/ytmusicapi) by sigma67
+- ⬇️ Audio extraction: [yt-dlp](https://github.com/yt-dlp/yt-dlp) by the yt-dlp contributors
 
 ---
 

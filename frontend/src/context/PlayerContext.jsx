@@ -11,8 +11,14 @@ export function PlayerProvider({ children }) {
   const [playedSongIds, setPlayedSongIds] = useState([]);
   const [history, setHistory] = useState([]); // Add history stack
   const audioRef = useRef(new window.Audio());
+  const [volume, setVolume] = useState(1); // 100% volume
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+
+  const setAudioVolume = (v) => {
+    setVolume(v);
+    if (audioRef.current) audioRef.current.volume = v;
+  };
 
   useEffect(() => {
     getLikedSongs().then(data => setLikedSongs(data.songs || []));
@@ -192,7 +198,10 @@ export function PlayerProvider({ children }) {
       currentIndex,
       likedSongs,
       likeSong: likeSongAndSync,
-      unlikeSong: unlikeSongAndSync
+      unlikeSong: unlikeSongAndSync,
+      audioRef,        // expose audioRef
+      volume,          // expose current volume
+      setAudioVolume   // expose volume setter
     }}>
       {children}
     </PlayerContext.Provider>

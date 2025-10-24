@@ -97,7 +97,7 @@
 
 .library-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 32px;
   padding: 32px 24px 0 24px;
   width: 100%;
@@ -283,11 +283,21 @@
     padding: 24px 0 0 0;
   }
   .library-list {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
     padding: 12px;
   }
   .library-card-img {
     min-width: 120px;
     max-width: 160px;
+  }
+}
+
+@media (max-width: 768px) {
+  .library-list {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    padding: 12px 16px;
   }
 }
 
@@ -300,7 +310,9 @@
     padding-right: 8px;
   }
   .library-list {
-    padding: 4px;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 4px 12px;
   }
   .library-card {
     flex-direction: column;
