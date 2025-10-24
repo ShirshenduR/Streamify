@@ -4,8 +4,13 @@ import Nowplaying from './Nowplaying';
 import { usePlayer } from '../context/usePlayer';
 
 export default function MiniPlayer() {
-  const { currentSong, isPlaying, pauseSong, resumeSong, likedSongs, likeSong } = usePlayer();
+  const { currentSong, isPlaying, pauseSong, resumeSong, likedSongs, likeSong, volume, setAudioVolume } = usePlayer();
   const [showNowPlaying, setShowNowPlaying] = useState(false);
+
+  const handleVolumeChange = (e) => {
+  const newVolume = parseFloat(e.target.value);
+  setAudioVolume(newVolume);
+  };
 
   const togglePlay = (e) => {
     e.stopPropagation();
@@ -54,6 +59,38 @@ export default function MiniPlayer() {
           )}
         </div>
         <div className="mini-controls" onClick={e => e.stopPropagation()}>
+
+          {/* Volume control with speaker */}
+  <div className="volume-container">
+    <button 
+      className="volume-icon" 
+      onClick={() => setAudioVolume(volume > 0 ? 0 : 1)} 
+      aria-label={volume > 0 ? 'Mute' : 'Unmute'}
+    >
+      {volume > 0 ? (
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff">
+          <path d="M3 10v4h4l5 5V5l-5 5H3z"/>
+        </svg>
+      ) : (
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff">
+          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.74 2.5-2.26 2.5-4.03zM3 10v4h4l5 5V5l-5 5H3z"/>
+          <line x1="19" y1="5" x2="5" y2="19" stroke="#fff" strokeWidth="2"/>
+        </svg>
+      )}
+    </button>
+
+    <input
+      type="range"
+      min="0"
+      max="1"
+      step="0.01"
+      value={volume}
+      onChange={handleVolumeChange}
+      className="volume-slider"
+      style={{ background: `linear-gradient(to right, #fff 0%, #fff ${volume*100}%, rgba(255,255,255,0.3) ${volume*100}%, rgba(255,255,255,0.3) 100%)` }}
+
+    />
+  </div>
           <button className={`mini-like${isLiked ? ' liked' : ''}`} onClick={handleLike} disabled={!currentSong} aria-label={isLiked ? 'Unlike' : 'Like'}>
             {isLiked ? (
               <svg width="28" height="28" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" style={{display:'block',margin:'auto'}}>
