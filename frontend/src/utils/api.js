@@ -1,6 +1,6 @@
 import { auth } from './firebaseConfig';
 
-const API_BASE = import.meta.env.VITE_BACKEND_API_URL || '';
+const API_BASE = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:8000';
 
 async function getToken() {
   const user = auth.currentUser;

@@ -15,6 +15,16 @@ const Login = () => {
     }
   }, [currentUser, navigate]);
 
+  // For development: auto-login after a short delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!currentUser) {
+        navigate('/home', { replace: true });
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [currentUser, navigate]);
+
   const handleGoogleLogin = () => {
     signInWithPopup(auth, provider)
       .then((result) => {
