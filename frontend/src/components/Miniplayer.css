@@ -196,4 +196,9 @@
   border-radius: 2px;
   background: transparent; 
 }
-
+/* Hide volume slider on small screens */
+@media (max-width: 768px) {
+  .volume-container {
+    display: none;
+  }
+}
