@@ -1,9 +1,9 @@
 /* Login.css */
 body {
   margin: 0;
-  font-family: 'Inter', sans-serif;
-  background-color: #1a0f0f;
-  color: white;
+  font-family: inherit;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
 }
 
 .login-container {
@@ -13,56 +13,95 @@ body {
   justify-content: center;
   height: 100vh;
   text-align: center;
-  padding: 1rem;
+  padding: var(--space-md);
+  background: linear-gradient(135deg, var(--color-background) 0%, var(--color-background-secondary) 100%);
 }
 
 .logo {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-lg);
+  transition: transform var(--transition-normal);
+}
+
+.logo:hover {
+  transform: scale(1.05);
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #ff5f7e;
-  margin: 0.5rem 0;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin: var(--space-sm) 0;
+  letter-spacing: -0.02em;
 }
 
 .subtitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: white;
-  margin-bottom: 1rem;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-md);
+  opacity: 0.9;
 }
 
 .terms {
-  font-size: 0.875rem;
-  color: #cbbcbc;
-  margin-bottom: 2rem;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-xl);
+  max-width: 400px;
+  line-height: 1.5;
 }
 
 .terms span {
   text-decoration: underline;
   cursor: pointer;
+  color: var(--color-text-primary);
+  transition: color var(--transition-normal);
+}
+
+.terms span:hover {
+  color: var(--color-primary);
 }
 
 .google-btn {
-  background-color: #e94149;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-text-primary);
   border: none;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-md);
+  min-width: 200px;
 }
 
 .google-btn:hover {
-  background-color: #c73b41;
+  background-color: var(--color-primary-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.google-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-md);
 }
 
 footer {
   position: absolute;
-  bottom: 1rem;
-  font-size: 0.75rem;
-  color: #b8a8a8;
+  bottom: var(--space-md);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  max-width: 90%;
+}
+
+footer a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-normal);
+}
+
+footer a:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
 }

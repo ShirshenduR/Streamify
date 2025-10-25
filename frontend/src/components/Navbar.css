@@ -2,13 +2,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #4a2f2f !important; /* Match Miniplayer color */
-  padding: 0 32px;
-  height: 64px;
+  background: var(--color-background-secondary) !important;
+  padding: 0 var(--space-xl);
+  height: var(--space-3xl);
   width: 100%;
   box-sizing: border-box;
-  border-top: 1.5px solid #2a1818 !important;
-  border-bottom: 1.5px solid #2a1818 !important;
+  border-top: 1px solid var(--color-border) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-sm);
 }
 
 .navbar-left {
@@ -19,8 +20,13 @@
 .navbar-logo {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-md);
   text-decoration: none;
+  transition: opacity var(--transition-normal);
+}
+
+.navbar-logo:hover {
+  opacity: 0.8;
 }
 
 .navbar-svg-logo {
@@ -31,17 +37,17 @@
 }
 
 .navbar-title {
-  color: #fff;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 1.4rem;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xl);
   letter-spacing: 0.5px;
 }
 
 .navbar-center {
   display: flex;
   align-items: center;
-  gap: 36px;
+  gap: var(--space-2xl);
 }
 
 .navbar-icon {
@@ -50,13 +56,14 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: 8px;
-  transition: background 0.2s;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
   text-decoration: none;
 }
 
 .navbar-icon:hover {
-  background: #232323;
+  background: var(--color-surface-hover);
+  transform: scale(1.05);
 }
 
 .navbar-icon svg {
@@ -66,25 +73,26 @@
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: var(--space-lg);
 }
 
 .navbar-heart {
-  background: #232323;
+  background: var(--color-surface);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   width: 44px;
   height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all var(--transition-normal);
   padding: 0;
 }
 
 .navbar-heart:hover {
-  background: #333;
+  background: var(--color-surface-hover);
+  transform: scale(1.05);
 }
 
 .navbar-heart svg {
@@ -97,21 +105,22 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   overflow: hidden;
-  border: 2px solid #232323;
-  background: #181818;
-  transition: border 0.2s;
+  border: 2px solid var(--color-border);
+  background: var(--color-background-secondary);
+  transition: all var(--transition-normal);
 }
 
 .navbar-avatar:hover {
-  border: 2px solid #fff;
+  border: 2px solid var(--color-primary);
+  transform: scale(1.05);
 }
 
 .navbar-avatar img {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   object-fit: cover;
 }
 
@@ -122,13 +131,13 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 64px;
-    background: #4a2f2f !important; /* Match Miniplayer color */
-    border-top: 1.5px solid #2a1818 !important;
+    height: var(--space-3xl);
+    background: var(--color-background-secondary) !important;
+    border-top: 1px solid var(--color-border) !important;
     border-bottom: none !important;
-    z-index: 1002;
-    padding: 0 0;
-    box-shadow: 0 -2px 16px rgba(0,0,0,0.18);
+    z-index: var(--z-fixed);
+    padding: 0;
+    box-shadow: var(--shadow-lg);
     justify-content: center;
   }
   .navbar-left, .navbar-right {
@@ -142,10 +151,10 @@
   .navbar-icon {
     width: 54px;
     height: 54px;
-    border-radius: 50%;
+    border-radius: var(--radius-full);
     background: none;
     margin: 0 2vw;
-    font-size: 1.2rem;
+    font-size: var(--font-size-lg);
   }
   .navbar-icon svg {
     width: 32px;
@@ -157,10 +166,10 @@
 @media (min-width: 701px) {
   .navbar {
     position: static;
-    background: #181818;
-    border-bottom: 1.5px solid #232323;
+    background: var(--color-background-secondary);
+    border-bottom: 1px solid var(--color-border);
     border-top: none;
-    box-shadow: none;
+    box-shadow: var(--shadow-sm);
   }
 }
 

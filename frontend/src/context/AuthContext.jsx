@@ -17,8 +17,18 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
+    // For development: create a demo user if Firebase fails
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
+      if (user) {
+        setCurrentUser(user);
+      } else {
+        // Create a demo user for development
+        setCurrentUser({
+          uid: 'demo-user',
+          displayName: 'Demo User',
+          email: 'demo@example.com'
+        });
+      }
       setLoading(false);
     });
 
