@@ -2,22 +2,24 @@
 .song-card {
   display: flex;
   align-items: center;
-  gap: 18px;
-  background: #2c1d1d;
-  border-radius: 12px;
-  padding: 12px 18px;
-  margin-bottom: 8px;
-  transition: background 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  gap: var(--space-lg);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-lg);
+  margin-bottom: var(--space-sm);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 .song-card:hover {
-  background: #3b2323;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  background: var(--color-surface-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 .song-cover {
   width: 56px;
   height: 56px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   object-fit: cover;
 }
 .song-info {
@@ -25,48 +27,49 @@
   flex-direction: column;
 }
 .song-title {
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 2px;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-xs);
 }
 .song-artist {
-  color: #c89393;
-  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 /* Spotify-style song card grid */
 .song-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 24px;
-  padding: 0 24px 24px 24px;
+  gap: var(--space-lg);
+  padding: 0 var(--space-lg) var(--space-lg) var(--space-lg);
 }
 
 .song-card-spotify {
-  background: linear-gradient(135deg, #2a1a1a 60%, #3b2323 100%);
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
-  padding: 18px 16px 14px 16px;
+  background: linear-gradient(135deg, var(--color-surface) 60%, var(--color-surface-hover) 100%);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-lg) var(--space-md) var(--space-md) var(--space-md);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  transition: all var(--transition-normal);
   min-width: 0;
+  border: 1px solid var(--color-border);
 }
 .song-card-spotify:hover {
-  background: #3b2323;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.18);
-  transform: translateY(-4px) scale(1.03);
+  background: var(--color-surface-hover);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px) scale(1.02);
 }
 .song-card-img-wrap {
   width: 100%;
   aspect-ratio: 1/1;
   overflow: hidden;
-  border-radius: 12px;
-  margin-bottom: 14px;
-  background: #222;
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-md);
+  background: var(--color-background-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -75,38 +78,38 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 .song-card-meta {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-xs);
 }
 .song-card-title {
-  color: #fff;
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin-bottom: 2px;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .song-card-artist {
-  color: #c89393;
-  font-size: 0.97rem;
-  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .song-card-source {
-  color: #9a7878;
-  font-size: 0.85rem;
-  font-weight: 400;
-  margin-top: 2px;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  margin-top: var(--space-xs);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -116,25 +119,25 @@
 @media (max-width: 768px) {
   .song-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    padding: 0 16px 16px 16px;
+    gap: var(--space-md);
+    padding: 0 var(--space-md) var(--space-md) var(--space-md);
   }
 
   .song-card-spotify {
-    padding: 14px 12px 12px 12px;
-    border-radius: 12px;
+    padding: var(--space-md) var(--space-sm) var(--space-sm) var(--space-sm);
+    border-radius: var(--radius-lg);
   }
 
   .song-card-title {
-    font-size: 0.95rem;
+    font-size: var(--font-size-base);
   }
 
   .song-card-artist {
-    font-size: 0.88rem;
+    font-size: var(--font-size-sm);
   }
 
   .song-card-source {
-    font-size: 0.8rem;
+    font-size: var(--font-size-xs);
   }
 }
 
@@ -142,34 +145,34 @@
 @media (max-width: 480px) {
   .song-grid {
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
-    padding: 0 12px 12px 12px;
+    gap: var(--space-sm);
+    padding: 0 var(--space-sm) var(--space-sm) var(--space-sm);
   }
 
   .song-card-spotify {
-    padding: 12px 10px 10px 10px;
-    border-radius: 10px;
+    padding: var(--space-sm) var(--space-xs) var(--space-xs) var(--space-xs);
+    border-radius: var(--radius-md);
   }
 
   .song-card-img-wrap {
-    border-radius: 10px;
-    margin-bottom: 10px;
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-sm);
   }
 
   .song-card-img {
-    border-radius: 10px;
+    border-radius: var(--radius-md);
   }
 
   .song-card-title {
-    font-size: 0.9rem;
-    margin-bottom: 1px;
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--space-xs);
   }
 
   .song-card-artist {
-    font-size: 0.82rem;
+    font-size: var(--font-size-xs);
   }
 
   .song-card-source {
-    font-size: 0.75rem;
+    font-size: var(--font-size-xs);
   }
 }

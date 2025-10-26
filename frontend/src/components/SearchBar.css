@@ -1,16 +1,17 @@
 .search-bar {
   width: 100%;
   max-width: 600px !important;
-  margin: 32px auto 24px auto !important;
-  background: #4a2f2f !important; /* Match navbar color */
-  border-radius: 18px !important;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.22) !important;
+  margin: var(--space-xl) auto var(--space-lg) auto !important;
+  background: var(--color-background-secondary) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-xl) !important;
   display: flex;
   align-items: center;
-  padding: 0 24px !important;
+  padding: 0 var(--space-lg) !important;
   height: 54px !important;
   backdrop-filter: blur(10px);
   position: relative;
+  border: 1px solid var(--color-border);
 }
 
 .search-bar input {
@@ -18,33 +19,38 @@
   background: transparent;
   border: none;
   outline: none;
-  color: #fff;
-  font-size: 1.1rem;
-  padding: 0 8px;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  padding: 0 var(--space-sm);
   height: 44px;
 }
 
 .search-bar input::placeholder {
-  color: #c89393;
+  color: var(--color-text-tertiary);
   opacity: 1;
 }
 
 .clear-btn {
   background: none;
   border: none;
-  color: #b59c9c;
-  font-size: 1.1rem;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-lg);
   cursor: pointer;
+  transition: color var(--transition-normal);
+}
+
+.clear-btn:hover {
+  color: var(--color-text-primary);
 }
 
 .search-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.25s cubic-bezier(0.4,0,0.2,1);
+  animation: fadeIn var(--transition-slow) cubic-bezier(0.4,0,0.2,1);
 }
 
 @keyframes fadeIn {
@@ -55,12 +61,12 @@
 .search-overlay-home {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: var(--z-modal);
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.25s cubic-bezier(0.4,0,0.2,1);
-  transition: opacity 0.25s cubic-bezier(0.4,0,0.2,1), transform 0.25s cubic-bezier(0.4,0,0.2,1);
+  animation: fadeIn var(--transition-slow) cubic-bezier(0.4,0,0.2,1);
+  transition: opacity var(--transition-slow) cubic-bezier(0.4,0,0.2,1), transform var(--transition-slow) cubic-bezier(0.4,0,0.2,1);
   overflow-x: hidden !important;
   width: 100vw;
   max-width: 100vw;
@@ -69,10 +75,10 @@
 .search-overlay-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(24, 24, 24, 0.92) !important;
-  backdrop-filter: blur(16px) !important;
+  background: rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: blur(12px) !important;
   z-index: 0;
-  transition: background 0.25s;
+  transition: background var(--transition-slow);
 }
 
 .search-overlay-modal {
@@ -97,41 +103,46 @@
 
 .search-overlay-input {
   width: 100%;
-  padding: 14px 18px;
-  font-size: 1.1rem;
-  border-radius: 8px;
-  border: none;
+  padding: var(--space-md) var(--space-lg);
+  font-size: var(--font-size-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
   outline: none;
-  background: #2d1819;
-  color: #fff;
-  margin-bottom: 18px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-lg);
+  transition: border-color var(--transition-normal);
+}
+
+.search-overlay-input:focus {
+  border-color: var(--color-primary);
 }
 
 .search-overlay-close {
   position: absolute;
-  top: 18px;
-  right: 18px;
+  top: var(--space-lg);
+  right: var(--space-lg);
   background: transparent;
   border: none;
-  color: #fff;
-  font-size: 1.5rem;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-2xl);
   cursor: pointer;
   padding: 0;
-  transition: color 0.2s;
+  transition: color var(--transition-normal);
 }
 
 .search-overlay-close:hover {
-  color: #e92932;
+  color: var(--color-primary);
 }
 
 .search-overlay-results.song-grid {
   width: 100vw;
   max-width: 900px;
   margin: 0 auto;
-  padding: 0 16px 32px 16px;
+  padding: 0 var(--space-md) var(--space-xl) var(--space-md);
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 28px;
+  gap: var(--space-xl);
   justify-content: center;
   overflow-x: hidden !important;
 }
@@ -139,13 +150,13 @@
 @media (max-width: 700px) {
   .search-bar {
     max-width: 98vw !important;
-    margin: 18px auto 18px auto !important;
+    margin: var(--space-lg) auto var(--space-lg) auto !important;
     height: 48px !important;
-    font-size: 1.1rem;
+    font-size: var(--font-size-lg);
   }
   .search-overlay-results.song-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 16px;
-    padding: 0 6px 24px 6px;
+    gap: var(--space-md);
+    padding: 0 var(--space-xs) var(--space-lg) var(--space-xs);
   }
 }
