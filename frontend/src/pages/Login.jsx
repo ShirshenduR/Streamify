@@ -50,6 +50,7 @@ const Login = () => {
         <span>Privacy Policy</span>
       </p>
       <button className="google-btn" onClick={handleGoogleLogin}>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Google_Favicon_2025.svg" alt="" id="google-btn-svg"/>
         Continue with Google
       </button>
       <footer>©2025–Streamify Made By <a href ='https://github.com/ShirshenduR'  target='_blank' style={{ color: 'inherit', textDecoration: 'underline', }}>Shirshendu R Tripathi</a></footer>
