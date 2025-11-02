@@ -1,50 +1,140 @@
-import React from 'react';
-import './Navbar.css';
-import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { useAuth } from "@/hooks/useAuth";
+import { usePlayer } from "@/hooks/usePlayer";
+import { useSearchList } from "@/hooks/useSearch";
+import {
+  Autocomplete,
+  AutocompleteItem,
+  Avatar,
+  cn,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Input,
+  Link,
+  Navbar,
+  NavbarBrand,
+  NavbarContent,
+  Spinner,
+} from "@heroui/react";
+import { SearchIcon } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useCallback, useMemo } from "react";
+import { useLocation } from "react-router-dom";
+import AppLogo from "./AppLogo";
+import SongItem from "./SongItem";
 
-export default function Navbar({ onSearchClick }) {
-  const { currentUser } = useAuth();
+export default function Appbar() {
+  const { user, logout } = useAuth();
+  const { pathname } = useLocation();
+  const { theme, setTheme } = useTheme();
+  let searchList = useSearchList();
+  const { playSong } = usePlayer();
+  const searchMode = useMemo(() => pathname === "/search", [pathname]);
+
+  const toggleTheme = useCallback(
+    () => setTheme(theme === "light" ? "dark" : "light"),
+    [theme, setTheme]
+  );
+
   return (
-    <nav className="navbar">
-      {/* Hide logo/title on mobile, show only on desktop */}
-      <div className="navbar-left">
-        <Link to="/home" className="navbar-logo" aria-label="Streamify Home">
-          <span className="navbar-svg-logo">
-            <svg width="40" height="40" viewBox="0 0 176 211" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" clipRule="evenodd" d="M88 0.083334H175.75V70.3609V140.639H88V210.917H0.25V140.639V70.3609H88V0.083334V0.083334Z" fill="#fff"/>
-            </svg>
-          </span>
-          <span className="navbar-title">Streamify</span>
-        </Link>
-      </div>
-      <div className="navbar-center">
-        <Link to="/home" className="navbar-icon" aria-label="Home">
-          {/* Modern Home Icon */}
-          <svg width="26" height="26" fill="none" viewBox="0 0 24 24"><path d="M3 12L12 5l9 7v7a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-3h-2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7z" stroke="#fff" strokeWidth="2.2" strokeLinejoin="round"/></svg>
-        </Link>
-        <button className="navbar-icon" aria-label="Search" onClick={onSearchClick} style={{background:'none',border:'none',padding:0,cursor:'pointer'}}>
-          {/* Modern Search Icon */}
-          <svg width="26" height="26" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke="#fff" strokeWidth="2.2"/><path d="M20.5 20.5l-4.5-4.5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"/></svg>
-        </button>
-        <Link to="/library" className="navbar-icon" aria-label="Library">
-          {/* Modern Library Icon */}
-          <svg width="26" height="26" fill="none" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" stroke="#fff" strokeWidth="2.2"/><rect x="7.5" y="8.5" width="9" height="2" rx="1" fill="#fff"/><rect x="7.5" y="12.5" width="9" height="2" rx="1" fill="#fff"/></svg>
-        </Link>
-      </div>
-      {/* Hide avatar on mobile, show only on desktop */}
-      <div className="navbar-right">
-        <Link
-          className="navbar-avatar"
-          to="/profile"
-          title={currentUser?.displayName || 'Profile'}
-        >
-          <img
-            src={currentUser?.photoURL || 'https://randomuser.me/api/portraits/women/44.jpg'}
-            alt="User Avatar"
+    <Navbar
+      isBordered
+      maxWidth="full"
+      className=""
+      classNames={{ base: "h-14 md:h-16", wrapper: "px-4" }}
+    >
+      <NavbarBrand
+        as={Link}
+        href="home"
+        className={cn("text-inherit", searchMode ? "hidden lg:inline-flex" : "")}
+      >
+        <AppLogo width={36} height={36} />
+        <p className="ms-2 font-bold text-inherit">Streamify</p>
+      </NavbarBrand>
+      <NavbarContent
+        className={cn("hidden lg:flex gap-4 flex-1", searchMode ? "flex" : "")}
+        justify="center"
+      >
+        {searchMode ? (
+          <Input
+            aria-label="Type to search"
+            value={searchList.filterText}
+            onValueChange={searchList.setFilterText}
+            placeholder="Type to search..."
+            startContent={<SearchIcon />}
+            isClearable
           />
-        </Link>
-      </div>
-    </nav>
+        ) : (
+          <Autocomplete
+            aria-label="Type to search"
+            inputValue={searchList.filterText}
+            isLoading={searchList.isLoading}
+            items={searchList.items}
+            onInputChange={searchList.setFilterText}
+            placeholder="Type to search..."
+            startContent={<SearchIcon />}
+            menuTrigger="input"
+            shouldCloseOnBlur={false}
+            classNames={{
+              base: "hidden lg:flex max-w-full h-10",
+              selectorButton: "hidden",
+            }}
+            disableSelectorIconRotation
+            listboxProps={{
+              emptyContent: searchList.isLoading ? (
+                <div className="flex justify-center py-2">
+                  <Spinner size="sm" aria-label="Searching" />
+                </div>
+              ) : searchList.items.length === 0 ? (
+                <div className="py-2 text-center text-default-400 text-sm">No results found</div>
+              ) : null,
+            }}
+          >
+            {(song) => (
+              <AutocompleteItem key={song.id} onPress={() => playSong(song)}>
+                <SongItem song={song} />
+              </AutocompleteItem>
+            )}
+          </Autocomplete>
+        )}
+      </NavbarContent>
+      <NavbarContent
+        as="div"
+        justify="end"
+        className={cn(searchMode ? "hidden lg:inline-flex" : "")}
+      >
+        <Dropdown placement="bottom-end">
+          <DropdownTrigger className="cursor-pointer">
+            <Avatar
+              isBordered
+              as="button"
+              className="transition-transform"
+              name={user?.displayName}
+              size="sm"
+              src={user?.photoURL || "https://randomuser.me/api/portraits/women/44.jpg"}
+            />
+          </DropdownTrigger>
+          <DropdownMenu aria-label="Profile Actions" variant="flat">
+            <DropdownItem key="profile" className="h-14 gap-2">
+              <p className="font-semibold">Signed in as</p>
+              <p className="font-semibold">{user.email}</p>
+            </DropdownItem>
+            <DropdownItem key="theme" onPress={toggleTheme}>
+              Switch to {theme === "light" ? "Dark" : "Light"} theme
+            </DropdownItem>
+            <DropdownItem key="profile" as={Link} href="profile" className="text-inherit">
+              Profile
+            </DropdownItem>
+            <DropdownItem key="library" as={Link} href="library" className="text-inherit">
+              Library
+            </DropdownItem>
+            <DropdownItem key="logout" color="danger" onPress={() => logout()}>
+              Log Out
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+      </NavbarContent>
+    </Navbar>
   );
 }

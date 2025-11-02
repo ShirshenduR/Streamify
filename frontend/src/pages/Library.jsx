@@ -1,94 +1,89 @@
-import { useState, useEffect } from 'react';
-import './Library.css';
-import SearchBar from '../components/SearchBar';
-import { getPlaylists, getPlaylistDetail, getLikedSongs } from '../utils/api';
-import { usePlayer } from '../context/usePlayer';
-import PlaylistCard from '../components/PlaylistCard';
+import Page from "@/components/page/Page";
+import PageTitle from "@/components/page/PageTitle";
+import PlaylistCard from "@/components/PlaylistCard";
+import SongGrid from "@/components/SongGrid";
+import { getLikedSongs, getPlaylistDetail, getPlaylists } from "@/utils/api";
+import { BreadcrumbItem, Breadcrumbs } from "@heroui/react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 export default function Library({ showSearch, setShowSearch }) {
-  const [query, setQuery] = useState('');
   const [playlists, setPlaylists] = useState([]);
-  const [selectedPlaylist, setSelectedPlaylist] = useState(null);
-  const [playlistSongs, setPlaylistSongs] = useState([]);
   const [likedSongs, setLikedSongs] = useState([]);
-  const { playSong } = usePlayer();
+  const allPlaylists = useMemo(
+    () => [
+      {
+        id: "liked",
+        name: "Liked Songs",
+        description: "Your favorite tracks",
+        image: "",
+        songs: likedSongs,
+      },
+      ...playlists.map((p) => ({ ...p, songs: [] })),
+    ],
+    [playlists, likedSongs]
+  );
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPlaylistId = useMemo(() => searchParams.get("playlistId"), [searchParams]);
+  const currentPlaylist = useMemo(
+    () => allPlaylists.find((p) => p.id === currentPlaylistId) || {},
+    [allPlaylists, currentPlaylistId]
+  );
+  const [playlistSongs, setPlaylistSongs] = useState([]);
+  const showSongs = currentPlaylistId !== null;
 
   useEffect(() => {
-    getPlaylists().then(data => setPlaylists(data.playlists || []));
-    getLikedSongs().then(data => setLikedSongs(data.songs || []));
+    getPlaylists().then((data) => setPlaylists(data.playlists || []));
+    getLikedSongs().then((data) => setLikedSongs(data.songs || []));
   }, []);
 
   useEffect(() => {
-    if (selectedPlaylist && selectedPlaylist !== 'liked') {
-      getPlaylistDetail(selectedPlaylist).then(data => setPlaylistSongs(data.songs || []));
+    if (currentPlaylistId && currentPlaylistId !== "liked") {
+      getPlaylistDetail(currentPlaylistId).then((data) => {
+        setPlaylistSongs(data.songs || []);
+      });
+    } else {
+      setPlaylistSongs(currentPlaylist.songs);
     }
-  }, [selectedPlaylist]);
-
-  const filteredPlaylists = playlists.filter((pl) =>
-    pl.name.toLowerCase().includes(query.toLowerCase())
-  );
-
-  const allPlaylists = [
-    { id: 'liked', name: 'Liked Songs', description: 'Your favorite tracks', image: '', songs: likedSongs },
-    ...filteredPlaylists.map(p => ({ ...p, songs: [] }))
-  ];
-
-  const showSongs = selectedPlaylist !== null;
-  const currentPlaylist = allPlaylists.find(p => p.id === selectedPlaylist) || {};
-  const songsToShow = selectedPlaylist === 'liked' ? likedSongs : playlistSongs;
+  }, [currentPlaylistId, currentPlaylist.songs]);
 
   return (
-    <div className="library-root">
-      {showSearch && (
-        <div className="search-overlay-home">
-          <div className="search-overlay-backdrop" onClick={() => setShowSearch(false)} />
-          <div className="search-overlay-modal">
-            <SearchBar 
-              query={query} 
-              setQuery={setQuery} 
-            />
-          </div>
-        </div>
-      )}
-      <div className="library-container">
-        <div className="library-header">
-          <p className="library-title">Your Library</p>
-        </div>
-        <div className="library-search-row">
-          <SearchBar query={query} setQuery={setQuery} onSearch={() => {}} />
-        </div>
+    <Page className="flex flex-col items-center">
+      <div className="w-full max-w-full max-auto flex flex-col">
+        <Breadcrumbs size="lg" className="mb-8">
+          <BreadcrumbItem href="/library">
+            <PageTitle className="m-0">Library</PageTitle>
+          </BreadcrumbItem>
+          {currentPlaylistId && (
+            <BreadcrumbItem>
+              <PageTitle className="m-0">{currentPlaylist?.name}</PageTitle>
+            </BreadcrumbItem>
+          )}
+        </Breadcrumbs>
+
         {!showSongs ? (
-          <div className="library-list">
+          <div className="w-full grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-6">
             {allPlaylists.map((playlist) => (
               <PlaylistCard
                 key={playlist.id}
                 playlist={playlist}
-                onClick={pl => setSelectedPlaylist(pl.id)}
+                onClick={() => {
+                  setSearchParams({ playlistId: playlist.id });
+                }}
               />
             ))}
           </div>
         ) : (
-          <div className="library-songs-list">
-            <button className="library-back-btn" onClick={() => setSelectedPlaylist(null)}>&larr; Back</button>
-            <div className="library-songs-title">{currentPlaylist.name}</div>
-            {songsToShow.length === 0 && <div className="library-empty">No songs found.</div>}
-            <div className="library-songs-cards">
-              {songsToShow.map(song => (
-                <div key={song.id} className="library-song-card" onClick={() => playSong(song, songsToShow)}>
-                  <img src={song.cover} alt={song.title} className="library-song-cover" />
-                  <div className="library-song-info">
-                    <div className="library-song-title">{song.title}</div>
-                    <div className="library-song-artist">{song.artist}</div>
-                  </div>
-                  <button className="library-song-play-btn" aria-label="Play">
-                    <svg width="28" height="28" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                  </button>
-                </div>
-              ))}
-            </div>
+          <div className="w-full flex flex-col gap-4">
+            {playlistSongs?.length === 0 ? (
+              <div className="library-empty">No songs found.</div>
+            ) : (
+              <SongGrid songs={playlistSongs} />
+            )}
           </div>
         )}
       </div>
-    </div>
+    </Page>
   );
 }

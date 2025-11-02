@@ -1,6 +1,6 @@
-import { auth } from './firebaseConfig';
+import { auth } from "./firebaseConfig";
 
-const API_BASE = import.meta.env.VITE_BACKEND_API_URL || '';
+const API_BASE = import.meta.env.VITE_BACKEND_API_URL || "";
 
 async function getToken() {
   const user = auth.currentUser;
@@ -8,11 +8,19 @@ async function getToken() {
   return await user.getIdToken();
 }
 
-export async function searchSongs(query) {
-  const res = await fetch(`${API_BASE}/api/search/combined/?q=${encodeURIComponent(query)}`);
+function getUserId() {
+  const user = auth.currentUser;
+  if (user === null) throw new Error("User not logged in");
+  return user.uid;
+}
+
+export async function searchSongs(query, signal) {
+  const res = await fetch(`${API_BASE}/api/search/combined/?q=${encodeURIComponent(query)}`, {
+    signal,
+  });
   const data = await res.json();
   if (data && Array.isArray(data.results)) {
-    return data.results.map(song => ({
+    return data.results.map((song) => ({
       id: song.id,
       title: song.title,
       artist: song.artist,
@@ -23,8 +31,8 @@ export async function searchSongs(query) {
   return [];
 }
 
-export async function getSongDetails(id, source = 'jiosaavn') {
-  if (source === 'ytmusic') {
+export async function getSongDetails(id, source = "jiosaavn") {
+  if (source === "ytmusic") {
     const res = await fetch(`${API_BASE}/api/ytmusic/song/?id=${encodeURIComponent(id)}`);
     return res.json();
   } else {
@@ -33,8 +41,8 @@ export async function getSongDetails(id, source = 'jiosaavn') {
   }
 }
 
-export async function downloadSong(id, source = 'jiosaavn') {
-  if (source === 'ytmusic') {
+export async function downloadSong(id, source = "jiosaavn") {
+  if (source === "ytmusic") {
     const res = await fetch(`${API_BASE}/api/ytmusic/download/?id=${encodeURIComponent(id)}`);
     return res.json();
   } else {
@@ -44,13 +52,11 @@ export async function downloadSong(id, source = 'jiosaavn') {
 }
 
 export async function likeSong(song) {
-  const user = auth.currentUser;
-  const userId = user ? user.uid : null;
-  if (!userId) throw new Error('User not logged in');
+  const userId = getUserId();
   const res = await fetch(`${API_BASE}/api/like/`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       song_id: song.id,
@@ -62,18 +68,16 @@ export async function likeSong(song) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Failed to like song');
+    throw new Error(err.error || "Failed to like song");
   }
 }
 
 export async function unlikeSong(song) {
-  const user = auth.currentUser;
-  const userId = user ? user.uid : null;
-  if (!userId) throw new Error('User not logged in');
+  const userId = getUserId();
   const res = await fetch(`${API_BASE}/api/unlike/`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       song_id: song.id,
@@ -82,13 +86,12 @@ export async function unlikeSong(song) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'Failed to unlike song');
+    throw new Error(err.error || "Failed to unlike song");
   }
 }
 
 export async function getLikedSongs() {
-  const user = auth.currentUser;
-  const userId = user ? user.uid : null;
+  const userId = getUserId();
   if (!userId) return { songs: [] };
   const res = await fetch(`${API_BASE}/api/liked/?user_id=${encodeURIComponent(userId)}`);
   if (!res.ok) return { songs: [] };
@@ -98,7 +101,7 @@ export async function getLikedSongs() {
 export async function getPlaylists() {
   const token = await getToken();
   const res = await fetch(`${API_BASE}/api/playlists/`, {
-    headers: { 'Authorization': `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${token}` },
   });
   return res.json();
 }
@@ -106,10 +109,10 @@ export async function getPlaylists() {
 export async function createPlaylist(name) {
   const token = await getToken();
   const res = await fetch(`${API_BASE}/api/playlists/`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ name }),
   });
@@ -119,7 +122,7 @@ export async function createPlaylist(name) {
 export async function getPlaylistDetail(id) {
   const token = await getToken();
   const res = await fetch(`${API_BASE}/api/playlists/${id}/`, {
-    headers: { 'Authorization': `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${token}` },
   });
   return res.json();
 }
@@ -127,10 +130,10 @@ export async function getPlaylistDetail(id) {
 export async function updatePlaylist(id, data) {
   const token = await getToken();
   const res = await fetch(`${API_BASE}/api/playlists/${id}/`, {
-    method: 'PATCH',
+    method: "PATCH",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(data),
   });
