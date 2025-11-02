@@ -46,7 +46,7 @@ Streamify/
 │   ├── public/
 │   ├── src/
 │   │   ├── components/       # UI components (Miniplayer, Nowplaying, Navbar, etc.)
-│   │   ├── context/          # React context (Player, Auth)
+│   │   ├── hooks/          # React hooks (Player, Auth)
 │   │   ├── pages/            # App pages (Home, Login, Library)
 │   │   ├── utils/            # API, firebaseConfig
 │   │   └── App.jsx
@@ -61,7 +61,6 @@ Streamify/
 ## 🚀 Getting Started
 
 ### 🔧 Frontend Setup (React + Vite)
-
 
 > Create a `.env` file inside `frontend/` with your Firebase config:
 
