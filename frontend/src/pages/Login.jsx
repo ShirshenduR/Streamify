@@ -1,58 +1,61 @@
-import './Login.css';
-import { auth, provider } from '../utils/firebaseConfig';
-import { signInWithPopup } from 'firebase/auth';
-import { useAuth } from '../context/AuthContext.jsx';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import AppLogo from "@/components/AppLogo";
+import { Google } from "@/components/icons/Google";
+import { useAuth } from "@/hooks/useAuth";
+import { auth, provider } from "@/utils/firebaseConfig";
+import { Button, Link } from "@heroui/react";
+import { signInWithPopup } from "firebase/auth";
+import { useEffect, useMemo } from "react";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 
 const Login = () => {
-  const { currentUser } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const next = useMemo(() => searchParams.get("next") ?? "home", [searchParams]);
 
   useEffect(() => {
-    if (currentUser) {
-      navigate('/home', { replace: true });
+    if (user) {
+      navigate(next, { replace: true });
     }
-  }, [currentUser, navigate]);
+  }, [user, navigate]);
 
   const handleGoogleLogin = () => {
     signInWithPopup(auth, provider)
       .then((result) => {
-        const user = result.user;
-        console.log('User Info:', user);
-        navigate('/home', { replace: true });
+        navigate(next, { replace: true });
       })
       .catch((error) => {
-        console.error('Login Error:', error.message);
+        console.error("Login Error:", error.message);
       });
   };
 
-  if (currentUser) {
-    return <Navigate to="/home" replace />;
+  if (user) {
+    return <Navigate to={next} replace />;
   }
 
   return (
-    <div className="login-container">
-      <div
-        className="logo"
-        dangerouslySetInnerHTML={{
-          __html: `
-        <svg width="176" height="211" viewBox="0 0 176 211" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path fill-rule="evenodd" clip-rule="evenodd" d="M88 0.083334H175.75V70.3609V140.639H88V210.917H0.25V140.639V70.3609H88V0.083334V0.083334Z" fill="white"/>
-        </svg>
-      `,
-        }}
-      />
-      <h1 className="title">Streamify</h1>
-      <h2 className="subtitle">Stream and Download millions of songs</h2>
-      <p className="terms">
-        By continuing, you agree to our <span>Terms of Service</span> and{' '}
-        <span>Privacy Policy</span>
-      </p>
-      <button className="google-btn" onClick={handleGoogleLogin}>
+    <div className="flex flex-col items-center justify-center h-screen text-center p-4">
+      <div className="mb-6">
+        <AppLogo />
+      </div>
+      <h1 className="text-4xl font-bold py-2 text-primary">Streamify</h1>
+      <h2 className="text-xl font-semibold mb-8">Stream and Download millions of songs</h2>
+      <Button onPress={handleGoogleLogin} variant="solid" color="primary" startContent={<Google />}>
         Continue with Google
-      </button>
-      <footer>©2025–Streamify Made By <a href ='https://github.com/ShirshenduR'  target='_blank' style={{ color: 'inherit', textDecoration: 'underline', }}>Shirshendu R Tripathi</a></footer>
+      </Button>
+
+      <footer className="absolute bottom-6 text-xs text-muted-foreground">
+        <p>
+          By continuing, you agree to our{" "}
+          <Link href="/terms" className="text-xs">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="text-xs">
+            Privacy Policy
+          </Link>
+        </p>
+      </footer>
     </div>
   );
 };
