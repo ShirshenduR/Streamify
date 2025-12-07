@@ -7,7 +7,7 @@ export default function BottomMenu() {
   return (
     <Tabs
       classNames={{
-        base: "w-full flex lg:hidden p-2 border-t-1 border-t-content2",
+        base: "w-full flex lg:hidden p-2",
         tabList: "w-full rounded-none bg-transparent",
         cursor: "rounded-none shadow-none",
       }}
