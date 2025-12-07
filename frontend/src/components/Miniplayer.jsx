@@ -17,6 +17,13 @@ import { useState } from "react";
 import Nowplaying from "./Nowplaying";
 import SongItem from "./SongItem";
 
+function formatTime(seconds) {
+  if (!seconds || isNaN(seconds)) return "0:00";
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 export default function MiniPlayer({ className }) {
   const {
     currentSong,
@@ -29,6 +36,8 @@ export default function MiniPlayer({ className }) {
     likeSong,
     volume,
     setAudioVolume,
+    currentTime,
+    duration,
   } = usePlayer();
   const [showNowPlaying, setShowNowPlaying] = useState(false);
   const isTablet = useTablet();
@@ -77,10 +86,15 @@ export default function MiniPlayer({ className }) {
           currentSong ? "flex" : "hidden lg:flex",
           className
         )}
-        onClick={handleOpenNowPlaying}
-        style={{ cursor: "pointer" }}
       >
-        <SongItem song={currentSong} />
+        <div className="flex flex-col flex-1 gap-1" onClick={handleOpenNowPlaying} style={{ cursor: "pointer" }}>
+          <SongItem song={currentSong} />
+          {/* Time display for mobile/tablet */}
+          <div className="flex md:hidden justify-between text-xs text-foreground-500 px-1">
+            <span>{formatTime(currentTime)}</span>
+            <span>{formatTime(duration)}</span>
+          </div>
+        </div>
         <div className="flex lg:flex-1 gap-4 items-center justify-end lg:justify-center">
           <Button
             isIconOnly

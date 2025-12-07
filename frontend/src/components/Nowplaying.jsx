@@ -96,18 +96,18 @@ export default function Nowplaying({ open, onClose }) {
   return (
     <div
       className={cn(
-        "fixed inset-0 z-1000",
+        "fixed inset-0 z-50",
         open ? "block pointer-events-auto animate-appearance-in" : "hidden pointer-events-none"
       )}
     >
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background w-screen h-screen z-1000 overflow-hidden">
+      <div className="absolute inset-0 bg-background w-full h-full overflow-auto">
         <div className="flex justify-end items-center p-4">
           <Button onPress={onClose} variant="light" isIconOnly>
             <X />
           </Button>
         </div>
 
-        <div className="flex flex-col justify-center items-center gap-4 p-4">
+        <div className="flex flex-col justify-center items-center gap-4 p-4 max-w-2xl mx-auto">
           <div
             className="w-40 h-40 rounded-md bg-default bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${currentSong?.cover || ""})` }}
@@ -137,7 +137,7 @@ export default function Nowplaying({ open, onClose }) {
               }}
             />
 
-            <div className="nowplaying-progress-times">
+            <div className="flex justify-between items-center w-full text-xs text-foreground-500 mt-2">
               <span>{formatTime(dragValue ?? currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div>

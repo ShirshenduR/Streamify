@@ -15,10 +15,10 @@ export default function App() {
         <PlayerProvider>
           <main className="w-full h-full">
             <Navbar />
-            <section className="w-full min-h-screen z-0 p-4 overflow-x-hidden">
+            <section className="w-full min-h-screen z-0 p-4 pb-32 md:pb-24 overflow-x-hidden">
               <Outlet />
             </section>
-            <section className="fixed bottom-0 left-0 right-0 w-full bg-background text-foreground z-100 border-t-1 border-t-content2">
+            <section className="fixed bottom-0 left-0 right-0 w-full bg-background text-foreground z-50 border-t-1 border-t-content2">
               <MiniPlayer />
               <BottomMenu />
             </section>
