@@ -19,6 +19,7 @@ import {
   Timer,
   TriangleAlert,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import AmbientBackground from "@/components/common/AmbientBackground";
@@ -95,6 +96,7 @@ export default function NowPlaying({ open, onClose, onOpenQueue }) {
   } = usePlayer();
   const { isLiked, toggle: toggleLike } = useLikeState();
   const toast = useToast();
+  const router = useRouter();
 
   const scrollRef = useRef(null);
   const dragRef = useRef(0);
@@ -166,10 +168,12 @@ export default function NowPlaying({ open, onClose, onOpenQueue }) {
   }, [currentSong, toast]);
 
   const searchForTrack = () => {
-    const term = encodeURIComponent(`${currentSong?.title ?? ""} ${currentSong?.artist ?? ""}`.trim());
+    const term = `${currentSong?.title ?? ""} ${currentSong?.artist ?? ""}`.trim();
     dismissError();
     onClose();
-    window.location.href = `/search?q=${term}`;
+    // router.push, not window.location: a location assignment reloads the whole
+    // document and flashes the "Starting Streamify" gate.
+    router.push(`/search?q=${encodeURIComponent(term)}`);
   };
 
   if (!open || !currentSong) return null;

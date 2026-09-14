@@ -2,6 +2,7 @@
 
 import { cn } from "@heroui/react";
 import { ListMusic, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 import { gradientFor } from "@/lib/site";
 import SongCard from "./SongCard";
@@ -70,10 +71,12 @@ export function PlaylistCard({ playlist, href, covers = [], icon: Icon = ListMus
   const className = "group block text-left";
 
   if (href) {
+    // Link, not <a>: a plain anchor does a full document load, which reboots the
+    // app and flashes the "Starting Streamify" gate on every navigation.
     return (
-      <a href={href} className={className}>
+      <Link href={href} className={className}>
         {content}
-      </a>
+      </Link>
     );
   }
 
@@ -86,7 +89,7 @@ export function PlaylistCard({ playlist, href, covers = [], icon: Icon = ListMus
 
 export function LikedSongsCard({ count, href }) {
   return (
-    <a href={href} className="group block text-left">
+    <Link href={href} className="group block text-left">
       <span className="relative grid aspect-square w-full place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 shadow-lg shadow-violet-500/25 transition duration-300 group-hover:-translate-y-0.5">
         <svg viewBox="0 0 24 24" className="size-10 text-white" fill="currentColor" aria-hidden="true">
           <path d="M12 21s-7.5-4.6-9.3-9A5.4 5.4 0 0 1 12 6.2 5.4 5.4 0 0 1 21.3 12c-1.8 4.4-9.3 9-9.3 9Z" />
@@ -98,13 +101,13 @@ export function LikedSongsCard({ count, href }) {
           {count} {count === 1 ? "song" : "songs"}
         </span>
       </span>
-    </a>
+    </Link>
   );
 }
 
 export function ForYouCard({ artistCount, href }) {
   return (
-    <a href={href} className="group block text-left">
+    <Link href={href} className="group block text-left">
       <span className="relative grid aspect-square w-full place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 via-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/25 transition duration-300 group-hover:-translate-y-0.5">
         <Sparkles className="size-10 text-white" />
       </span>
@@ -114,6 +117,6 @@ export function ForYouCard({ artistCount, href }) {
           {artistCount > 0 ? `Based on ${artistCount} artists` : "Your daily mix"}
         </span>
       </span>
-    </a>
+    </Link>
   );
 }
