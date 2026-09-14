@@ -110,6 +110,19 @@ html.light {
   box-shadow: inset 0 1px 0 0 var(--color-hairline-soft);
 }
 
+/* Detached panels that hover above the page — the player and the search fields.
+   A two-part shadow (a tight contact shadow plus a wide ambient one) is what
+   makes them read as floating rather than painted on. */
+@utility glass-float {
+  background-color: var(--color-glass);
+  -webkit-backdrop-filter: blur(34px) saturate(190%);
+  backdrop-filter: blur(34px) saturate(190%);
+  box-shadow:
+    inset 0 1px 0 0 var(--color-hairline),
+    0 6px 16px -6px var(--color-shadow),
+    0 22px 48px -18px var(--color-shadow);
+}
+
 /* Whisper-thin wash for tiles sitting on the ambient background. */
 @utility glass-card {
   background-color: var(--color-glass-faint);

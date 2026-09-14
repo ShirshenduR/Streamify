@@ -81,7 +81,7 @@ export default function SearchField({ className, autoFocus = false, onNavigate }
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
-      <div className="flex h-10 items-center gap-2.5 rounded-full bg-glass-faint px-3.5 transition focus-within:bg-glass-hover">
+      <div className="glass-float flex h-11 items-center gap-2.5 rounded-full border border-[var(--color-hairline)] px-4 transition focus-within:border-primary/60">
         <Search className="size-4 shrink-0 text-foreground-500" />
         <input
           ref={inputRef}
@@ -118,7 +118,7 @@ export default function SearchField({ className, autoFocus = false, onNavigate }
       </div>
 
       {showPanel ? (
-        <div className="glass animate-rise absolute inset-x-0 top-12 z-50 max-h-[70vh] overflow-y-auto rounded-2xl p-1.5">
+        <div className="glass-float animate-rise absolute inset-x-0 top-[3.25rem] z-50 max-h-[70vh] overflow-y-auto rounded-2xl border border-[var(--color-hairline)] p-1.5">
           {results.length === 0 ? (
             <p className="px-3 py-6 text-center text-sm text-foreground-500">
               {isFetching ? "Searching…" : `No results for “${value.trim()}”`}

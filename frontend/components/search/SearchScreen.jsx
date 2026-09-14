@@ -73,7 +73,7 @@ export default function SearchScreen() {
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Search</h1>
       </header>
 
-      <div className="flex h-12 items-center gap-3 rounded-2xl bg-glass-faint px-4 transition focus-within:bg-glass-hover">
+      <div className="glass-float flex h-12 items-center gap-3 rounded-2xl border border-[var(--color-hairline)] px-4 transition focus-within:border-primary/60">
         <Search className="size-4 shrink-0 text-foreground-500" />
         <input
           value={term}

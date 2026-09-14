@@ -70,8 +70,14 @@ export default function PlayerBar({ onExpand, onOpenQueue, className }) {
   const hasSong = Boolean(currentSong);
 
   return (
-    <div className={cn("shrink-0 px-3 pb-3 lg:px-4", !hasSong && "hidden lg:block", className)}>
-      <div className="glass-bar relative overflow-hidden rounded-3xl">
+    <div
+      className={cn(
+        "shrink-0 px-3 pb-3 sm:px-4 sm:pb-4",
+        !hasSong && "hidden lg:block",
+        className
+      )}
+    >
+      <div className="glass-float relative overflow-hidden rounded-[26px] border border-[var(--color-hairline)]">
         {/* Mobile: a slim progress line sits flush with the top of the pill. */}
         {hasSong ? (
           <ProgressLine className="absolute inset-x-0 top-0 rounded-none lg:hidden" />

@@ -34,10 +34,13 @@ export function SeekBar({ className, showTimes = true }) {
         classNames={{
           base: "gap-0",
           trackWrapper: "items-center",
-          track: cn("h-1 rounded-full", max === 0 ? "bg-glass-faint" : "bg-white/15"),
-          filler: "rounded-full bg-foreground/90 transition-colors group-hover/seek:bg-primary",
+          // One accent colour for track and fill across every slider. `foreground`
+          // at low alpha also keeps the unfilled track visible in light mode,
+          // where a white wash disappeared entirely.
+          track: cn("h-1 rounded-full", max === 0 ? "bg-glass-faint" : "bg-foreground/15"),
+          filler: "rounded-full bg-primary",
           thumb:
-            "size-3 rounded-full bg-foreground shadow-md transition-opacity opacity-0 group-hover/seek:opacity-100 group-data-[dragging=true]/seek:opacity-100",
+            "size-3 rounded-full bg-primary shadow-md transition-opacity opacity-0 group-hover/seek:opacity-100 group-data-[dragging=true]/seek:opacity-100",
         }}
       />
       {showTimes ? (
@@ -56,9 +59,9 @@ export function ProgressLine({ className }) {
   const played = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
 
   return (
-    <div className={cn("h-[3px] w-full overflow-hidden rounded-full bg-white/15", className)}>
+    <div className={cn("h-[3px] w-full overflow-hidden rounded-full bg-foreground/15", className)}>
       <div
-        className="h-full rounded-full bg-foreground/80 transition-[width] duration-500 ease-linear"
+        className="h-full rounded-full bg-primary transition-[width] duration-500 ease-linear"
         style={{ width: `${played}%` }}
       />
     </div>
@@ -93,9 +96,9 @@ export function VolumeControl({ className, showSlider = true }) {
           className="hidden w-24 lg:flex"
           classNames={{
             base: "gap-0",
-            track: "h-1 rounded-full bg-white/15",
-            filler: "rounded-full bg-foreground/80",
-            thumb: "size-2.5 rounded-full bg-foreground opacity-0 transition-opacity hover:opacity-100",
+            track: "h-1 rounded-full bg-foreground/15",
+            filler: "rounded-full bg-primary",
+            thumb: "size-2.5 rounded-full bg-primary opacity-0 transition-opacity hover:opacity-100",
           }}
         />
       ) : null}
