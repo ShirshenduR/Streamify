@@ -1,0 +1,32 @@
+# Build context hygiene. Two things matter here:
+#  1. never bake a real .env into the image,
+#  2. keep the dev database and installed dependencies out of it.
+
+**/node_modules
+**/.next
+**/out
+**/dist
+**/build
+
+**/.git
+**/.gitignore
+
+**/__pycache__
+**/*.py[cod]
+
+# Python environments
+**/.venv
+**/venv
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Local database + collected static: recreated at container start.
+backend/db.sqlite3
+backend/staticfiles
+
+# Local dev helpers
+**/.DS_Store
+**/*.log
+**/npm-debug.log*
+frontend/scripts

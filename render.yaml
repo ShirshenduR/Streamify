@@ -1,0 +1,48 @@
+# Optional Render Blueprint — one web service, one image, no second deploy target.
+#
+# You do not need this file: creating a Web Service and pointing it at ./Dockerfile
+# works just as well. It is here so the whole thing can be reproduced from the repo.
+#
+# Every secret uses `sync: false`, which means Render asks you for the value at
+# setup time instead of inventing one — reuse the environment you already have.
+
+services:
+  - type: web
+    name: streamify
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/health/
+    autoDeploy: true
+    envVars:
+      # Django. Either name works; set whichever you already have.
+      - key: DJANGO_SECRET_KEY
+        sync: false
+      - key: DEBUG
+        value: "False"
+
+      # Postgres. SQLite also boots, but a Render filesystem is ephemeral so a
+      # library would be lost on every deploy.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: streamify-db
+          property: connectionString
+
+      # Firebase (Google sign-in). These ship in the browser bundle by design,
+      # but they still belong to you rather than to the repo.
+      - key: VITE_FIREBASE_API_KEY
+        sync: false
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: VITE_FIREBASE_PROJECT_ID
+        sync: false
+      - key: VITE_FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: VITE_FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: VITE_FIREBASE_APP_ID
+        sync: false
+
+databases:
+  - name: streamify-db
+    plan: free

@@ -4,11 +4,11 @@
     "module": "esnext",
     "target": "esnext",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./*"]
     },
     "jsx": "react-jsx",
     "moduleResolution": "bundler"
   },
-  "include": ["src/**/*.js", "src/**/*.jsx"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["app/**/*.js", "app/**/*.jsx", "components/**/*.jsx", "hooks/**/*.jsx", "lib/**/*.js"],
+  "exclude": ["node_modules", ".next", "public"]
 }

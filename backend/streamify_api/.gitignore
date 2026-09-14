@@ -1,9 +1,0 @@
-.env
-venv
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.db
-*.sqlite3 
-headers_auth.json

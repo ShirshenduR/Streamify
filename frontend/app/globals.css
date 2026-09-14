@@ -1,0 +1,217 @@
+@import "tailwindcss";
+@plugin "./hero.mjs";
+
+@source "../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
+@source "./**/*.{js,jsx}";
+@source "../components/**/*.{js,jsx}";
+@source "../hooks/**/*.{js,jsx}";
+@source "../lib/**/*.{js,jsx}";
+
+/* Matches both the class next-themes writes and a data attribute, so `dark:`
+   utilities keep working whichever mechanism is used. */
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
+/* ------------------------------------------------------------------ tokens -- */
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+
+  /* Frosted-glass material, in the spirit of Apple Music's translucent panels.
+     Measured in real colours (not HeroUI's channel triples) so they can be mixed
+     with color-mix and alpha modifiers. */
+  --color-glass: rgba(22, 22, 26, 0.58);
+  --color-glass-strong: rgba(14, 14, 18, 0.78);
+  --color-glass-faint: rgba(255, 255, 255, 0.045);
+  --color-glass-hover: rgba(255, 255, 255, 0.08);
+  --color-hairline: rgba(255, 255, 255, 0.1);
+  --color-hairline-soft: rgba(255, 255, 255, 0.06);
+  --color-shadow: rgba(0, 0, 0, 0.55);
+}
+
+/* html.light outranks :root, so these reliably win over the @theme defaults. */
+html.light {
+  --color-glass: rgba(255, 255, 255, 0.62);
+  --color-glass-strong: rgba(255, 255, 255, 0.8);
+  --color-glass-faint: rgba(0, 0, 0, 0.035);
+  --color-glass-hover: rgba(0, 0, 0, 0.06);
+  --color-hairline: rgba(0, 0, 0, 0.08);
+  --color-hairline-soft: rgba(0, 0, 0, 0.05);
+  --color-shadow: rgba(15, 15, 25, 0.16);
+}
+
+/* ------------------------------------------------------------------- base --- */
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    color-scheme: dark;
+  }
+
+  html.light {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-sans);
+    letter-spacing: -0.011em;
+    overscroll-behavior-y: none;
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.022em;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--heroui-primary, #8b5cf6) 35%, transparent);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-hairline) transparent;
+  }
+
+  :focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--heroui-primary, #8b5cf6) 75%, transparent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ glass --- */
+
+/* The default translucent panel: bars, sheets, floating cards. */
+@utility glass {
+  background-color: var(--color-glass);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  backdrop-filter: blur(30px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 0 var(--color-hairline-soft),
+    0 18px 40px -20px var(--color-shadow);
+}
+
+/* Denser variant for surfaces that carry controls (player, nav bars). */
+@utility glass-bar {
+  background-color: var(--color-glass-strong);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(40px) saturate(180%);
+  box-shadow: inset 0 1px 0 0 var(--color-hairline-soft);
+}
+
+/* Whisper-thin wash for tiles sitting on the ambient background. */
+@utility glass-card {
+  background-color: var(--color-glass-faint);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  box-shadow: inset 0 1px 0 0 var(--color-hairline-soft);
+}
+
+@utility glass-raise {
+  box-shadow:
+    inset 0 1px 0 0 var(--color-hairline),
+    0 24px 60px -24px var(--color-shadow);
+}
+
+/* Apple-style top highlight on rounded corners. */
+@utility hairline-top {
+  box-shadow: inset 0 1px 0 0 var(--color-hairline);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility pb-safe {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}
+
+@utility pt-safe {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
+}
+
+/* ----------------------------------------------------------------- motion --- */
+
+@utility animate-drift {
+  animation: drift 22s ease-in-out infinite alternate;
+}
+
+@utility animate-fade-in {
+  animation: fade-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility animate-rise {
+  animation: rise 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility animate-toast-in {
+  animation: toast-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility animate-equalize {
+  animation: equalize 1.1s ease-in-out infinite;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(-4%, -3%, 0) scale(1.08);
+  }
+  to {
+    transform: translate3d(4%, 4%, 0) scale(1.2);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes equalize {
+  0%,
+  100% {
+    transform: scaleY(0.28);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
