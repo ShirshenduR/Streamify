@@ -2,6 +2,7 @@
 
 import { Clock, Play, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 import InstallPrompt from "@/components/common/InstallPrompt";
 import Shelf from "@/components/common/Shelf";
@@ -9,6 +10,7 @@ import {
   EmptyState,
   ErrorState,
   SectionHeader,
+  ServiceUnavailable,
   ShelfSkeleton,
   SongGridSkeleton,
 } from "@/components/common/States";
@@ -77,8 +79,9 @@ export default function HomePage() {
   const { uid, user } = useAuth();
   const { currentSong, play } = usePlayer();
   const mounted = useMounted();
+  const [refresh, setRefresh] = useState(0);
 
-  const discover = useDiscover(12);
+  const discover = useDiscover(12, refresh);
   const recommendations = useRecommendations(uid, 18);
   const history = useHistory(uid, 12);
 
@@ -150,6 +153,8 @@ export default function HomePage() {
           message={discover.error?.message}
           onRetry={() => discover.refetch()}
         />
+      ) : sections.length === 0 && discover.data?.unavailable ? (
+        <ServiceUnavailable onRetry={() => setRefresh((count) => count + 1)} />
       ) : (
         sections.map((section) => (
           <Shelf key={section.key} title={section.title} songs={section.songs} />

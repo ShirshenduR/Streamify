@@ -5,7 +5,13 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { EmptyState, ErrorState, SectionHeader, SongListSkeleton } from "@/components/common/States";
+import {
+  EmptyState,
+  ErrorState,
+  SectionHeader,
+  ServiceUnavailable,
+  SongListSkeleton,
+} from "@/components/common/States";
 import SongList from "@/components/song/SongList";
 import { usePlayer } from "@/hooks/usePlayer";
 import { useDebouncedValue, useMounted } from "@/hooks/useUi";
@@ -35,10 +41,18 @@ export default function SearchScreen() {
   const query = debounced.trim();
   const active = query.length >= 2;
 
-  const { data, isLoading, isFetching, isError, error, refetch } = useSearch(query, { limit: 30 });
+  // Bumped by "Try again" so the request carries refresh=1 and the server clears
+  // its upstream cooldown instead of waiting it out.
+  const [refresh, setRefresh] = useState(0);
+
+  const { data, isLoading, isFetching, isError, error, refetch } = useSearch(query, {
+    limit: 30,
+    refresh,
+  });
   const discover = useDiscover(6);
   const results = data?.results ?? [];
   const moods = discover.data?.moods ?? [];
+  const unavailable = Boolean(data?.unavailable);
 
   // Keep the address bar shareable without spraying history entries.
   useEffect(() => {
@@ -149,6 +163,8 @@ export default function SearchScreen() {
         <SongListSkeleton rows={10} />
       ) : isError ? (
         <ErrorState message={error?.message} onRetry={() => refetch()} />
+      ) : unavailable && results.length === 0 ? (
+        <ServiceUnavailable onRetry={() => setRefresh((count) => count + 1)} />
       ) : results.length === 0 ? (
         <EmptyState
           icon={Sparkles}

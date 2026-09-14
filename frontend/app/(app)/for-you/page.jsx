@@ -2,8 +2,15 @@
 
 import { Radio, RefreshCw, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
-import { EmptyState, ErrorState, SectionHeader, SongGridSkeleton } from "@/components/common/States";
+import {
+  EmptyState,
+  ErrorState,
+  SectionHeader,
+  ServiceUnavailable,
+  SongGridSkeleton,
+} from "@/components/common/States";
 import SongGrid from "@/components/song/SongGrid";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlayer } from "@/hooks/usePlayer";
@@ -12,7 +19,12 @@ import { useRecommendations } from "@/lib/queries";
 export default function ForYouPage() {
   const { uid } = useAuth();
   const { play, startRadioFrom } = usePlayer();
-  const { data, isLoading, isFetching, isError, error, refetch } = useRecommendations(uid, 30);
+  const [refresh, setRefresh] = useState(0);
+  const { data, isLoading, isFetching, isError, error, refetch } = useRecommendations(
+    uid,
+    30,
+    refresh
+  );
 
   const results = data?.results ?? [];
   const basedOn = data?.basedOn ?? [];
@@ -73,6 +85,8 @@ export default function ForYouPage() {
         <SongGridSkeleton count={12} />
       ) : isError ? (
         <ErrorState message={error?.message} onRetry={() => refetch()} />
+      ) : results.length === 0 && data?.unavailable ? (
+        <ServiceUnavailable onRetry={() => setRefresh((count) => count + 1)} />
       ) : results.length === 0 ? (
         <EmptyState
           icon={Sparkles}

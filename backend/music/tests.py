@@ -6,6 +6,7 @@ keeps the suite fast, deterministic and runnable offline.
 """
 
 import json
+import time
 from unittest import mock
 
 from django.contrib.auth import get_user_model
@@ -330,6 +331,90 @@ class RecommendationTests(TestCase):
 
         ids = [item["id"] for item in response.json()["results"]]
         self.assertEqual(ids, ["fresh"])
+
+
+class UpstreamCooldownTests(TestCase):
+    """The upstream is a WAF-fronted third party that bans whole networks.
+
+    Retrying into a block keeps it alive and makes every shelf look broken, so a
+    refusal must open a cooldown instead.
+    """
+
+    def setUp(self):
+        upstream.clear_cooldown()
+        with upstream._cache_lock:
+            upstream._cache.clear()
+
+    def tearDown(self):
+        upstream.clear_cooldown()
+        with upstream._cache_lock:
+            upstream._cache.clear()
+
+    @staticmethod
+    def _blocked_response():
+        return mock.Mock(status_code=429, ok=False, text="error code: 1027", headers={})
+
+    def test_a_refusal_opens_a_cooldown_and_stops_further_calls(self):
+        with mock.patch.object(
+            upstream.requests, "get", return_value=self._blocked_response()
+        ) as get:
+            self.assertEqual(upstream.search("kesariya", 1), [])
+            self.assertEqual(get.call_count, 1)
+            # Short-circuits: the block is not hammered.
+            self.assertEqual(upstream.search("kesariya", 1), [])
+            self.assertEqual(get.call_count, 1)
+
+        state = upstream.availability()
+        self.assertFalse(state["available"])
+        self.assertGreater(state["retryIn"], 0)
+        self.assertIn("1027", state["reason"] or "")
+
+    def test_a_network_error_also_opens_a_cooldown(self):
+        with mock.patch.object(
+            upstream.requests, "get", side_effect=upstream.requests.ConnectionError("boom")
+        ):
+            self.assertEqual(upstream.search("anything", 1), [])
+        self.assertFalse(upstream.availability()["available"])
+
+    def test_a_server_error_opens_a_cooldown(self):
+        response = mock.Mock(status_code=503, ok=False, text="unavailable", headers={})
+        with mock.patch.object(upstream.requests, "get", return_value=response):
+            self.assertEqual(upstream.search("anything", 1), [])
+        self.assertFalse(upstream.availability()["available"])
+
+    def test_clear_cooldown_reports_healthy_again(self):
+        upstream._open_cooldown("HTTP 429: error code: 1027")
+        self.assertFalse(upstream.availability()["available"])
+
+        upstream.clear_cooldown()
+
+        self.assertTrue(upstream.availability()["available"])
+        self.assertIsNone(upstream.availability()["reason"])
+
+    def test_empty_results_use_the_short_ttl(self):
+        """A failed lookup must not sit in the cache for the full TTL."""
+        with mock.patch.object(upstream, "_request", return_value={"data": {"results": []}}):
+            upstream.search("nothing-here", 1)
+
+        expires_at = upstream._cache["search:nothing-here:1"][0]
+        self.assertLessEqual(expires_at - time.time(), upstream.EMPTY_RESULT_TTL + 1)
+
+    def test_refresh_bypasses_the_cooldown_but_a_plain_request_does_not(self):
+        upstream._open_cooldown("HTTP 429: error code: 1027")
+        with mock.patch.object(
+            upstream.requests, "get", side_effect=upstream.requests.ConnectionError("x")
+        ) as get:
+            self.client.get("/api/search/?q=test")
+            self.assertEqual(get.call_count, 0, "a cooled-down request must not hit the network")
+
+            self.client.get("/api/search/?q=test&refresh=1")
+            self.assertEqual(get.call_count, 1, "refresh=1 should retry immediately")
+
+    def test_the_api_reports_the_outage_to_the_client(self):
+        upstream._open_cooldown("HTTP 429: error code: 1027")
+        payload = self.client.get("/api/search/?q=test").json()
+        self.assertTrue(payload["unavailable"])
+        self.assertGreater(payload["retryIn"], 0)
 
 
 class HelperTests(TestCase):

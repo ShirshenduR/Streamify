@@ -44,12 +44,22 @@ async function request(path, { method = "GET", body, signal, query } = {}) {
 /* catalogue                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export function searchSongs(query, { limit = 24, signal } = {}) {
-  return request("/search/", { query: { q: query, limit }, signal });
+/**
+ * `refresh` asks the server to clear its upstream cooldown first, so "Try again"
+ * picks up a recovery immediately rather than waiting the cooldown out.
+ */
+export function searchSongs(query, { limit = 24, signal, refresh = false } = {}) {
+  return request("/search/", {
+    query: { q: query, limit, ...(refresh ? { refresh: 1 } : {}) },
+    signal,
+  });
 }
 
-export function getDiscover({ limit = 12, signal } = {}) {
-  return request("/discover/", { query: { limit }, signal });
+export function getDiscover({ limit = 12, signal, refresh = false } = {}) {
+  return request("/discover/", {
+    query: { limit, ...(refresh ? { refresh: 1 } : {}) },
+    signal,
+  });
 }
 
 export function getSong(songId, { signal } = {}) {
@@ -92,8 +102,11 @@ export async function resolveStreamUrl(song) {
 /* personalised                                                               */
 /* -------------------------------------------------------------------------- */
 
-export function getRecommendations(userId, { limit = 24, signal } = {}) {
-  return request("/recommendations/", { query: { user_id: userId, limit }, signal });
+export function getRecommendations(userId, { limit = 24, signal, refresh = false } = {}) {
+  return request("/recommendations/", {
+    query: { user_id: userId, limit, ...(refresh ? { refresh: 1 } : {}) },
+    signal,
+  });
 }
 
 export function getHistory(userId, { limit = 30, signal } = {}) {

@@ -5,7 +5,8 @@ build playlists across millions of songs — free and ad-free. Built with **Next
 for the frontend and **Django REST Framework** for the backend, and shipped as **one Docker image**
 so it deploys as a single web service.
 
-All music data comes from the [unofficial JioSaavn API by @sumitkolhe](https://github.com/sumitkolhe/jiosaavn-api).
+All music data comes from the [unofficial JioSaavn API by @sumitkolhe](https://github.com/sumitkolhe/jiosaavn-api),
+which this project **runs inside its own container** on loopback (see below).
 
 > This project is for **educational purposes only**. It does not store or redistribute music files,
 > and the API it uses is unofficial.
@@ -55,8 +56,8 @@ All music data comes from the [unofficial JioSaavn API by @sumitkolhe](https://g
 | Backend   | Django 5, Django REST Framework, Gunicorn, WhiteNoise                    |
 | Auth      | Firebase Authentication (Google sign-in)                                 |
 | Database  | SQLite locally, PostgreSQL in production (`DATABASE_URL`)                 |
-| Music API | [Unofficial JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api)      |
-| Delivery  | One Docker image — Next.js + Django in the same container                 |
+| Music API | Bundled [unofficial JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api) (in-container) |
+| Delivery  | One Docker image — Next.js + Django + JioSaavn API in the same container    |
 
 ---
 
@@ -67,19 +68,26 @@ Django, which runs next to it on loopback — so there is no CORS, no second ser
 nothing extra to pay for.
 
 ```
-                    ┌──────────────── one Render web service (one Docker image) ─────────────────┐
-                    │                                                                            │
-  browser  ────────▶│  Next.js  :$PORT   ──── /api/* ────▶   Django + Gunicorn  127.0.0.1:8000   │
-  (PWA)    HTTPS    │   • pages, player                        • JioSaavn proxy + cache        │
-                    │   • /api/config (runtime Firebase cfg)   • likes, playlists, history      │
-                    │   • service worker, icons                 • recommendations               │
-                    │                                          │                                 │
-                    └──────────────────────────────────────────┼─────────────────────────────────┘
-                                                               ▼
-                                                     saavn.sumit.co (JioSaavn)
+                  ┌──────────────── one Render web service (one Docker image) ──────────────────┐
+                  │                                                                             │
+  browser  ──────▶│  Next.js :$PORT  ──── /api/* ───▶  Django + Gunicorn  127.0.0.1:8000         │
+  (PWA)   HTTPS   │   • pages, player                  • likes, playlists, history             │
+                  │   • /api/config (runtime FB cfg)   • recommendations, caching               │
+                  │   • service worker, icons                     │                              │
+                  │                                               │ loopback                     │
+                  │                                               ▼                              │
+                  │                          JioSaavn API  127.0.0.1:8123  (bundled)            │
+                  └───────────────────────────────────────────────┼─────────────────────────────┘
+                                                                  ▼
+                                                       www.jiosaavn.com
 ```
 
-Two details worth knowing:
+Three processes share the container and only one is public. The music catalogue is **bundled**, not
+a third-party call: the shared public instance (`saavn.sumit.co`) fronts itself with a WAF that bans
+whole networks, and it answered this project's network with Cloudflare `error code: 1027` on every
+route — including the bare domain. Self-hosting also pins the response shape to a commit we control.
+
+Two more details worth knowing:
 
 - **`/api/config`** serves the Firebase keys to the browser at *runtime*, read from the same
   `VITE_FIREBASE_*` variables the Vite app used. Render injects env vars when the container starts,
@@ -145,7 +153,22 @@ npm run dev                        # http://localhost:3000
 
 Open <http://localhost:3000>. The dev server proxies `/api/*` to `127.0.0.1:8000` for you.
 
-### 3. Firebase (Google sign-in)
+### 3. Music catalogue (only needed outside Docker)
+
+In the container Django calls a bundled JioSaavn API on `127.0.0.1:8123`. Running locally you need
+that process too, or search and playback return empty:
+
+```bash
+cd /tmp && mkdir jiosaavn-api && cd jiosaavn-api
+curl -sL https://codeload.github.com/ShirshenduR/jiosaavn/tar.gz/6dc24cfb1ec444cdfcea9de1e59afd1146a51547 \
+  | tar xz --strip-components=1
+npm install --ignore-scripts && npm run build
+node /path/to/streamify/saavn-api/serve.mjs    # serves 127.0.0.1:8123
+```
+
+Django does not need to be told about it — the address is a constant in `backend/music/upstream.py`.
+
+### 4. Firebase (Google sign-in)
 
 1. Create a project in the [Firebase console](https://console.firebase.google.com/).
 2. Enable **Authentication → Google**.
@@ -309,18 +332,23 @@ npm run build
 - **Identity is the Firebase UID, trusted as sent.** Verifying an ID token server-side needs a
   Firebase service-account secret, and this project deliberately ships with none. Treat the API as
   you would any single-user demo: anyone who knows a UID can read and write that library.
-- **The upstream API is rate limited.** Responses are cached in-process for 10 minutes and searches
-  run through a small thread pool, but a cold start against a throttled API returns empty shelves
-  rather than an error.
+- **The music catalogue runs in the same container.** It is fetched at image build time from
+  `ShirshenduR/jiosaavn`, pinned to a commit (`SAAVN_API_SHA` in the `Dockerfile`). Bump that ARG to
+  move to a newer upstream; if that repository disappears the image build breaks.
+- **If the catalogue does go down**, the API reports `unavailable: true` and the UI says the music
+  service is unreachable rather than claiming there are no results. A short cooldown stops the app
+  hammering a blocked service, and "Try again" bypasses it.
 - **Downloads are proxied** through the backend, so a large library download costs server bandwidth.
 - Playback URLs point at a third-party CDN and expire; they are resolved on demand and never stored.
 - `db.sqlite3` is a local development convenience and is not part of the deployment.
+- **No new environment variables.** Everything above works with the keys that were already there.
 
 ---
 
 ## 🙌 Credits
 
-- 🎧 API: [Sumit Kolhe's JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api)
+- 🎧 API: [Sumit Kolhe's JioSaavn API](https://github.com/sumitkolhe/jiosaavn-api), bundled in the
+  container from [a pinned fork](https://github.com/ShirshenduR/jiosaavn) (MIT, © Sumit Kolhe)
 - 🎨 UI kit: [HeroUI](https://www.heroui.com/) · icons: [Lucide](https://lucide.dev/)
 - ⚡ Framework: [Next.js](https://nextjs.org/) · [Django](https://www.djangoproject.com/)
 

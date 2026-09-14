@@ -2,8 +2,10 @@
 
 The backend is a **cached proxy and a small library store** in front of the hosted JioSaavn API.
 
-- `upstream.py` — talks to `saavn.sumit.co`, normalises its payloads into one shape, and caches the
-  results in-process (the upstream API is rate limited, and every user asks for the same searches).
+- `upstream.py` — talks to the **bundled** JioSaavn API on `127.0.0.1:8123`, normalises its payloads
+  into one shape, and caches the results in-process (the upstream is rate limited, and every user
+  asks for the same searches). It previously called the shared public instance, which WAF-bans whole
+  networks; self-hosting is why search and playback work at all.
 - `views.py` — the HTTP surface: catalogue, likes, listening history, playlists, recommendations.
 - `models.py` — `LikedSong`, `ListeningHistory`, `Playlist`, `PlaylistSong`.
 

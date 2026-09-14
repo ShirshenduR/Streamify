@@ -19,16 +19,76 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-JIOSAAVN_API = "https://saavn.sumit.co/api"
+# The music catalogue is bundled into this container and reached over loopback
+# (see the root Dockerfile and saavn-api/serve.mjs). It used to point at the
+# shared public instance, saavn.sumit.co, but that WAF-bans whole networks — it
+# answered this project's network with Cloudflare "error code: 1027" on every
+# route, including the bare domain. Self-hosting also means the response shape is
+# pinned to a commit we control rather than whatever the public instance serves.
+#
+# Keep the port in step with saavn-api/serve.mjs and docker-entrypoint.sh.
+JIOSAAVN_API = "http://127.0.0.1:8123/api"
 REQUEST_TIMEOUT = 12
 QUALITY_ORDER = ("320kbps", "160kbps", "96kbps", "48kbps", "12kbps")
 COVER_SIZES = ("500x500", "150x150")
+
+# How long to stop calling upstream after it refuses us. A WAF block (Cloudflare
+# answers 429 with "error code: 1027") is not something to retry through: every
+# retry keeps the block alive and makes the whole app feel broken.
+COOLDOWN_SECONDS = 120
+# Empty results are cached only briefly. They are usually the symptom of a failed
+# call, and caching one for the full TTL would keep serving empty shelves long
+# after the service recovered.
+EMPTY_RESULT_TTL = 30
 
 _cache = {}
 _cache_lock = threading.Lock()
 # Kept modest on purpose: the hosted API is rate limited, and a big burst of
 # parallel searches is what trips it.
 _pool = ThreadPoolExecutor(max_workers=4)
+
+_cooldown_lock = threading.Lock()
+_cooldown_until = 0.0
+_last_error = None
+
+
+def cooldown_remaining():
+    with _cooldown_lock:
+        return max(0.0, _cooldown_until - time.time())
+
+
+def _open_cooldown(reason, seconds=COOLDOWN_SECONDS):
+    global _cooldown_until, _last_error
+    with _cooldown_lock:
+        # Never let a later, milder failure cut an existing cooldown short.
+        _cooldown_until = max(_cooldown_until, time.time() + seconds)
+        _last_error = reason
+    logger.warning("JioSaavn unavailable for %ss: %s", seconds, reason)
+
+
+def clear_cooldown():
+    """Called for an explicit retry: forget the cooldown *and* the empty results.
+
+    Empty entries are the footprint of the failure being retried past, and they
+    live on a short TTL. Leaving them would make "Try again" return the same
+    emptiness for up to 30 seconds, which is worse than not offering it.
+    """
+    global _cooldown_until, _last_error
+    with _cooldown_lock:
+        _cooldown_until = 0.0
+        _last_error = None
+    with _cache_lock:
+        for key, (_, value) in list(_cache.items()):
+            if not value:
+                _cache.pop(key, None)
+
+
+def availability():
+    """What to tell the client about the upstream right now."""
+    remaining = cooldown_remaining()
+    with _cooldown_lock:
+        reason = _last_error
+    return {"available": remaining <= 0, "retryIn": int(remaining), "reason": reason}
 
 
 def _cache_get(key):
@@ -61,19 +121,53 @@ def _cache_set(key, value, ttl):
 
 def cached(key, ttl, factory):
     hit = _cache_get(key)
+    # `is not None`, not truthiness: a cached empty list is a real hit.
     if hit is not None:
         return hit
-    return _cache_set(key, factory(), ttl)
+    value = factory()
+    return _cache_set(key, value, ttl if value else EMPTY_RESULT_TTL)
+
+
+def _describe(response):
+    """Keep the WAF's own words — "error code: 1027" says it is a block."""
+    try:
+        detail = (response.text or "").strip().splitlines()[0][:120]
+    except Exception:  # a broken connection can fail while reading the body
+        detail = ""
+    return f"HTTP {response.status_code}: {detail}" if detail else f"HTTP {response.status_code}"
 
 
 def _request(path, params=None):
+    """One upstream GET. Returns None instead of raising, ever.
+
+    When the service refuses us the call is not retried: a cooldown opens and
+    further requests short-circuit to None, so the app answers immediately rather
+    than stalling on every shelf, and the block gets a chance to lift.
+    """
+    if cooldown_remaining() > 0:
+        return None
+
     url = f"{JIOSAAVN_API}{path}"
     try:
         response = requests.get(url, params=params, timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        return response.json()
-    except (requests.RequestException, ValueError) as exc:
+    except requests.RequestException as exc:
         logger.warning("JioSaavn request failed (%s %s): %s", url, params, exc)
+        _open_cooldown(f"{exc.__class__.__name__}")
+        return None
+
+    # 403/429 mean "go away" (Cloudflare fronts this API) and 5xx means "not now".
+    if response.status_code in (403, 429) or response.status_code >= 500:
+        _open_cooldown(_describe(response))
+        return None
+
+    if not response.ok:
+        logger.warning("JioSaavn returned %s for %s %s", response.status_code, url, params)
+        return None
+
+    try:
+        return response.json()
+    except ValueError:
+        logger.warning("JioSaavn returned a non-JSON body for %s %s", url, params)
         return None
 
 

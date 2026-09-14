@@ -37,29 +37,30 @@ export const queryKeys = {
 
 const FIVE_MINUTES = 5 * 60 * 1000;
 
-export function useDiscover(limit = 12) {
+export function useDiscover(limit = 12, refresh = 0) {
   return useQuery({
-    queryKey: queryKeys.discover(limit),
-    queryFn: ({ signal }) => getDiscover({ limit, signal }),
+    queryKey: [...queryKeys.discover(limit), refresh],
+    queryFn: ({ signal }) => getDiscover({ limit, signal, refresh: refresh > 0 }),
     staleTime: 10 * FIVE_MINUTES,
   });
 }
 
-export function useSearch(term, { limit = 24, enabled = true } = {}) {
+export function useSearch(term, { limit = 24, enabled = true, refresh = 0 } = {}) {
   const trimmed = term.trim();
   return useQuery({
-    queryKey: queryKeys.search(trimmed, limit),
-    queryFn: ({ signal }) => searchSongs(trimmed, { limit, signal }),
+    queryKey: [...queryKeys.search(trimmed, limit), refresh],
+    queryFn: ({ signal }) => searchSongs(trimmed, { limit, signal, refresh: refresh > 0 }),
     enabled: enabled && trimmed.length >= 2,
     staleTime: FIVE_MINUTES,
     placeholderData: (previous) => previous,
   });
 }
 
-export function useRecommendations(userId, limit = 24) {
+export function useRecommendations(userId, limit = 24, refresh = 0) {
   return useQuery({
-    queryKey: queryKeys.recommendations(userId, limit),
-    queryFn: ({ signal }) => getRecommendations(userId, { limit, signal }),
+    queryKey: [...queryKeys.recommendations(userId, limit), refresh],
+    queryFn: ({ signal }) =>
+      getRecommendations(userId, { limit, signal, refresh: refresh > 0 }),
     enabled: Boolean(userId),
     staleTime: FIVE_MINUTES,
   });

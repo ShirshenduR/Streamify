@@ -1,6 +1,6 @@
 "use client";
 
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, WifiOff } from "lucide-react";
 
 import { cn } from "@heroui/react";
 
@@ -80,6 +80,43 @@ export function EmptyState({ icon: Icon, title, description, action, className }
         <p className="max-w-md text-sm text-foreground-500">{description}</p>
       ) : null}
       {action}
+    </div>
+  );
+}
+
+/**
+ * Shown when the music catalogue itself is unreachable.
+ *
+ * Distinct from "no results" on purpose: reporting "nothing found" while the
+ * service is down is simply untrue, and it sends people off rewording searches
+ * that were never going to work.
+ */
+export function ServiceUnavailable({ onRetry, className }) {
+  return (
+    <div
+      className={cn(
+        "glass-card flex flex-col items-center gap-3 rounded-3xl px-6 py-12 text-center",
+        className
+      )}
+    >
+      <span className="grid size-12 place-items-center rounded-2xl bg-glass-faint text-amber-400">
+        <WifiOff className="size-5" />
+      </span>
+      <h3 className="text-base font-semibold tracking-tight">Music service unavailable</h3>
+      <p className="max-w-md text-sm text-foreground-500">
+        Streamify could not reach the music catalogue right now. Your library still works — give it
+        a moment and try again.
+      </p>
+      {onRetry ? (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-1 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium transition hover:bg-white/15"
+        >
+          <RefreshCw className="size-3.5" />
+          Try again
+        </button>
+      ) : null}
     </div>
   );
 }

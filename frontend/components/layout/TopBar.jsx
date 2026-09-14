@@ -17,6 +17,8 @@ import ThemeToggle from "@/components/common/ThemeToggle";
 import { usePwa } from "@/components/providers/PwaProvider";
 import { useAuth } from "@/hooks/useAuth";
 import { initialsOf } from "@/lib/format";
+import { usePathname } from "next/navigation";
+
 import SearchField from "./SearchField";
 
 function ProfileMenu() {
@@ -80,6 +82,11 @@ function ProfileMenu() {
 }
 
 export default function TopBar({ className }) {
+  const pathname = usePathname();
+  // The search page renders its own full-width search field, so the bar must not
+  // show a second one above it.
+  const searchMode = pathname === "/search";
+
   return (
     <header
       className={cn(
@@ -92,16 +99,20 @@ export default function TopBar({ className }) {
         <span className="text-[15px] font-bold tracking-tight">Streamify</span>
       </Link>
 
-      <SearchField className="hidden flex-1 lg:block lg:max-w-xl" />
+      <SearchField
+        className={cn("hidden flex-1 lg:block lg:max-w-xl", searchMode && "lg:hidden")}
+      />
 
       <div className="ml-auto flex items-center gap-1">
-        <Link
-          href="/search"
-          aria-label="Search"
-          className="grid size-9 place-items-center rounded-full text-foreground-500 transition hover:bg-white/10 hover:text-foreground lg:hidden"
-        >
-          <Search className="size-4" />
-        </Link>
+        {searchMode ? null : (
+          <Link
+            href="/search"
+            aria-label="Search"
+            className="grid size-9 place-items-center rounded-full text-foreground-500 transition hover:bg-white/10 hover:text-foreground lg:hidden"
+          >
+            <Search className="size-4" />
+          </Link>
+        )}
         <ThemeToggle />
         <ProfileMenu />
       </div>

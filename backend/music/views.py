@@ -14,6 +14,7 @@ import logging
 from collections import defaultdict
 from urllib.parse import quote
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.db.models import Count, F, Max
@@ -102,6 +103,29 @@ def _user_from(request, payload=None):
     return user
 
 
+def _upstream_state():
+    """Tell the client whether the music service is refusing us, and for how long.
+
+    Without this the UI can only report "no results", which is a lie when the
+    truth is that the upstream is blocked or down.
+    """
+    state = upstream.availability()
+    return {
+        "unavailable": not state["available"],
+        "retryIn": state["retryIn"],
+        # The upstream's own words ("HTTP 429: error code: 1027") are useful while
+        # debugging but are infrastructure detail, so they stay in DEBUG.
+        "upstreamReason": state["reason"] if settings.DEBUG else None,
+    }
+
+
+def _maybe_retry(request):
+    """An explicit retry from the UI clears the cooldown, so a block that has
+    lifted is picked up immediately instead of after the cooldown expires."""
+    if request.GET.get("refresh"):
+        upstream.clear_cooldown()
+
+
 def _dedupe(songs):
     seen = set()
     unique = []
@@ -165,15 +189,17 @@ def health(request):
 
 @api_view(["GET"])
 def search(request):
+    _maybe_retry(request)
     query = (request.GET.get("q") or "").strip()
     if not query:
-        return JsonResponse({"query": "", "results": []})
+        return JsonResponse({"query": "", "results": [], **_upstream_state()})
     results = upstream.search(query, _limit(request.GET.get("limit"), default=24))
-    return JsonResponse({"query": query, "results": results})
+    return JsonResponse({"query": query, "results": results, **_upstream_state()})
 
 
 @api_view(["GET"])
 def discover(request):
+    _maybe_retry(request)
     limit = _limit(request.GET.get("limit"), default=12)
     buckets = upstream.search_many(
         [section["query"] for section in DISCOVER_SECTIONS], per_query=max(limit, 12)
@@ -183,7 +209,7 @@ def discover(request):
         songs = _dedupe(buckets.get(section["query"], []))[:limit]
         if songs:
             sections.append({**section, "songs": songs})
-    return JsonResponse({"sections": sections, "moods": MOODS})
+    return JsonResponse({"sections": sections, "moods": MOODS, **_upstream_state()})
 
 
 @api_view(["GET"])
@@ -248,6 +274,7 @@ def song_download(request, song_id):
 @api_view(["GET"])
 def radio(request):
     """Endless playback: given the track that just finished, suggest what's next."""
+    _maybe_retry(request)
     limit = _limit(request.GET.get("limit"), default=12)
     artist = (request.GET.get("artist") or "").strip()
     title = (request.GET.get("title") or "").strip()
@@ -266,7 +293,14 @@ def radio(request):
     songs = [song for song in _dedupe(pool) if song["id"] not in exclude][:limit]
 
     quality = "artist" if artist else "generic"
-    return JsonResponse({"seed": {"artist": artist, "title": title}, "quality": quality, "results": songs})
+    return JsonResponse(
+        {
+            "seed": {"artist": artist, "title": title},
+            "quality": quality,
+            "results": songs,
+            **_upstream_state(),
+        }
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -345,11 +379,14 @@ def build_recommendations(user, limit):
 
 @api_view(["GET"])
 def recommendations(request):
+    _maybe_retry(request)
     limit = _limit(request.GET.get("limit"), default=24)
     user = _lookup_user(request)
     if not user:
-        return JsonResponse({"personalized": False, "basedOn": [], "results": _cold_start(limit)})
-    return JsonResponse(build_recommendations(user, limit))
+        payload = {"personalized": False, "basedOn": [], "results": _cold_start(limit)}
+    else:
+        payload = build_recommendations(user, limit)
+    return JsonResponse({**payload, **_upstream_state()})
 
 
 # --------------------------------------------------------------------------- #
