@@ -425,6 +425,45 @@ class UpstreamCooldownTests(TestCase):
         self.assertTrue(payload["unavailable"])
         self.assertGreater(payload["retryIn"], 0)
 
+    def test_a_dead_configured_catalogue_falls_back_to_the_bundled_one(self):
+        """Pointing SAAVN_API_URL at a dead host must not take search down.
+
+        The bundled copy cannot answer for the international catalogue, but Indian
+        results are vastly better than an outage — and a wrong URL is exactly how
+        you would end up here.
+        """
+        with mock.patch.object(upstream, "JIOSAAVN_API", "http://127.0.0.1:9/api"):
+            upstream.clear_cooldown()
+            with mock.patch.object(
+                upstream.requests, "get", side_effect=upstream.requests.ConnectionError("refused")
+            ) as get:
+                self.assertIsNone(upstream._request("/search/songs"))
+
+        self.assertEqual(get.call_count, 2, "should have tried the configured host, then the bundle")
+        self.assertIn(upstream.BUNDLED_API, get.call_args_list[1].args[0])
+
+    def test_the_bundled_copy_is_not_gated_by_a_cooldown_opened_by_another_host(self):
+        """Otherwise the fallback would be unreachable exactly when it is needed."""
+        with mock.patch.object(upstream, "JIOSAAVN_API", "http://127.0.0.1:9/api"):
+            upstream._open_cooldown("HTTP 429: error code: 1027")
+            self.assertGreater(upstream.cooldown_remaining(), 0)
+
+            with mock.patch.object(
+                upstream, "_attempt", return_value={"data": {"results": []}}
+            ) as attempt:
+                result = upstream._request("/search/songs")
+
+            self.assertIsNotNone(result, "the bundled copy should still be consulted")
+            self.assertEqual(attempt.call_args.args[0], upstream.BUNDLED_API)
+
+    def test_without_configuration_a_cooldown_still_short_circuits(self):
+        """The bundled API is the only catalogue, so cooling down means stopping."""
+        with mock.patch.object(upstream, "JIOSAAVN_API", upstream.BUNDLED_API):
+            upstream._open_cooldown("HTTP 429: error code: 1027")
+            with mock.patch.object(upstream.requests, "get") as get:
+                self.assertIsNone(upstream._request("/search/songs"))
+                get.assert_not_called()
+
 
 class HelperTests(TestCase):
     def test_split_artists_dedupes_and_trims(self):

@@ -37,6 +37,11 @@ logger = logging.getLogger(__name__)
 # put it at the top. That is also what the upstream project's own
 # `regions: ["bom1"]` (Mumbai) is there for.
 
+# The copy that ships inside the container. Always present, so it is the last
+# resort whenever a configured catalogue is unreachable.
+BUNDLED_API = "http://127.0.0.1:8123/api"
+
+
 def _catalogue_url():
     """The configured catalogue base URL, trailing slash trimmed.
 
@@ -44,7 +49,7 @@ def _catalogue_url():
     without reloading the module. Read once at import: changing it on Render
     restarts the container anyway.
     """
-    return (os.environ.get("SAAVN_API_URL") or "http://127.0.0.1:8123/api").rstrip("/")
+    return (os.environ.get("SAAVN_API_URL") or BUNDLED_API).rstrip("/")
 
 
 JIOSAAVN_API = _catalogue_url()
@@ -157,38 +162,69 @@ def _describe(response):
     return f"HTTP {response.status_code}: {detail}" if detail else f"HTTP {response.status_code}"
 
 
-def _request(path, params=None):
-    """One upstream GET. Returns None instead of raising, ever.
+def _attempt(base, path, params):
+    """One GET against a specific catalogue host. Returns the payload or None.
 
-    When the service refuses us the call is not retried: a cooldown opens and
-    further requests short-circuit to None, so the app answers immediately rather
-    than stalling on every shelf, and the block gets a chance to lift.
+    Opens the cooldown when the host refuses us: a WAF block or an outage is not
+    something to retry through, because every retry keeps a block alive and makes
+    the app feel broken.
     """
-    if cooldown_remaining() > 0:
-        return None
-
-    url = f"{JIOSAAVN_API}{path}"
+    url = f"{base}{path}"
     try:
         response = requests.get(url, params=params, timeout=REQUEST_TIMEOUT)
     except requests.RequestException as exc:
-        logger.warning("JioSaavn request failed (%s %s): %s", url, params, exc)
+        logger.warning("Catalogue request failed (%s %s): %s", url, params, exc)
         _open_cooldown(f"{exc.__class__.__name__}")
         return None
 
-    # 403/429 mean "go away" (Cloudflare fronts this API) and 5xx means "not now".
+    # 403/429 mean "go away" (Cloudflare fronts JioSaavn) and 5xx means "not now".
     if response.status_code in (403, 429) or response.status_code >= 500:
         _open_cooldown(_describe(response))
         return None
 
     if not response.ok:
-        logger.warning("JioSaavn returned %s for %s %s", response.status_code, url, params)
+        logger.warning("Catalogue returned %s for %s %s", response.status_code, url, params)
         return None
 
     try:
         return response.json()
     except ValueError:
-        logger.warning("JioSaavn returned a non-JSON body for %s %s", url, params)
+        logger.warning("Catalogue returned a non-JSON body for %s %s", url, params)
         return None
+
+
+def _request(path, params=None):
+    """Fetch from the configured catalogue, falling back to the bundled copy.
+
+    The bundled copy ships in the container, so it is always there — it just
+    cannot answer for the international catalogue, because JioSaavn scopes its
+    search index by region. That is still far better than an outage: a configured
+    host that is unreachable now degrades to Indian results rather than returning
+    nothing at all. Without this, pointing SAAVN_API_URL at a dead host would take
+    search down completely.
+
+    A cooldown opened by the configured host only skips *that* host. The bundled
+    copy is never gated, or the fallback would be unreachable exactly when it is
+    needed.
+    """
+    external = JIOSAAVN_API != BUNDLED_API
+
+    if cooldown_remaining() <= 0:
+        payload = _attempt(JIOSAAVN_API, path, params)
+        if payload is not None:
+            return payload
+        if not external:
+            # The bundled copy *is* the configured one, and this failure just
+            # opened the cooldown that covers it. Nothing left to try.
+            return None
+        logger.info("Configured catalogue is unavailable; serving %s from the bundle", path)
+
+    # Either the configured host is cooling down, or it just failed. The bundled
+    # copy is deliberately not gated by that cooldown, or the fallback would be
+    # unreachable exactly when it is needed.
+    if external:
+        return _attempt(BUNDLED_API, path, params)
+    return None
 
 
 def _extract_songs(payload):
