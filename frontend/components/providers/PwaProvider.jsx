@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
+import { buildInstallGuide, detectDevice } from "@/lib/platform";
 import { readStore, STORE_KEYS, writeStore } from "@/lib/storage";
 
 const PwaContext = createContext(null);
@@ -9,22 +10,19 @@ const PwaContext = createContext(null);
 export function PwaProvider({ children }) {
   const [installEvent, setInstallEvent] = useState(null);
   const [isStandalone, setIsStandalone] = useState(false);
-  const [isIos, setIsIos] = useState(false);
+  const [device, setDevice] = useState({ device: "other", browser: "other", isMobile: false, ready: false });
   const [dismissed, setDismissed] = useState(true);
+  const [justInstalled, setJustInstalled] = useState(false);
 
+  // Everything is measured after mount: none of it is known while rendering on
+  // the server, and guessing would break hydration.
   useEffect(() => {
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       window.matchMedia("(display-mode: window-controls-overlay)").matches ||
       window.navigator.standalone === true;
     setIsStandalone(standalone);
-
-    const ua = window.navigator.userAgent;
-    const iOSDevice =
-      /iPad|iPhone|iPod/.test(ua) ||
-      (ua.includes("Macintosh") && typeof document !== "undefined" && "ontouchend" in document);
-    setIsIos(iOSDevice && !standalone);
-
+    setDevice(detectDevice());
     setDismissed(Boolean(readStore(STORE_KEYS.installDismissed, false)));
   }, []);
 
@@ -41,13 +39,14 @@ export function PwaProvider({ children }) {
 
   useEffect(() => {
     const onBeforeInstall = (event) => {
-      // Keep the event so we can trigger the prompt from our own button.
+      // Keep the event so our own button can trigger the browser's prompt.
       event.preventDefault();
       setInstallEvent(event);
     };
     const onInstalled = () => {
       setInstallEvent(null);
       setIsStandalone(true);
+      setJustInstalled(true);
     };
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
     window.addEventListener("appinstalled", onInstalled);
@@ -74,15 +73,28 @@ export function PwaProvider({ children }) {
     writeStore(STORE_KEYS.installDismissed, true);
   }, []);
 
+  const guide = useMemo(
+    () => buildInstallGuide({ device: device.device, browser: device.browser, canPrompt: Boolean(installEvent) }),
+    [device, installEvent]
+  );
+
   const value = useMemo(
     () => ({
-      canInstall: Boolean(installEvent) && !isStandalone && !dismissed,
-      showIosHint: isIos && !isStandalone && !dismissed,
+      // A native prompt is available right now (Chromium on Android/desktop).
+      canInstall: Boolean(installEvent),
+      // What this device should actually be told, and how.
+      guide,
+      supported: guide.supported,
+      // Worth showing only while running in a browser and not dismissed.
+      showPrompt: guide.supported && !isStandalone && !dismissed,
+      showUnsupported: !guide.supported && !isStandalone && !dismissed,
       isStandalone,
+      justInstalled,
+      device,
       promptInstall,
       dismissInstall,
     }),
-    [installEvent, isStandalone, isIos, dismissed, promptInstall, dismissInstall]
+    [installEvent, guide, isStandalone, dismissed, justInstalled, device, promptInstall, dismissInstall]
   );
 
   return <PwaContext.Provider value={value}>{children}</PwaContext.Provider>;

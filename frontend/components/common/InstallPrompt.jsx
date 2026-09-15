@@ -5,54 +5,75 @@ import { CheckCircle2, Download, Share, X } from "lucide-react";
 
 import { usePwa } from "@/components/providers/PwaProvider";
 
+function Steps({ steps, className }) {
+  return (
+    <ol className={cn("space-y-1.5", className)}>
+      {steps.map((step, index) => (
+        <li key={step} className="flex gap-2.5 text-xs leading-relaxed text-foreground-500">
+          <span className="mt-px grid size-4 shrink-0 place-items-center rounded-full bg-glass-faint text-[10px] font-semibold text-foreground-400">
+            {index + 1}
+          </span>
+          <span>{step}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 /**
- * Install affordance.
+ * The install recommendation, tailored to the device it is rendered on.
  *
- * Chrome/Edge/Android hand us a `beforeinstallprompt` event we can replay from
- * our own button; iOS Safari never fires it, so there we explain the Share sheet
- * route instead of showing a button that would do nothing.
+ * A Chromium browser hands us a prompt we can replay from our own button; every
+ * other case needs the person to do it through browser UI we cannot reach, so we
+ * show the exact steps for their platform instead of a button that does nothing.
  */
 export default function InstallPrompt({ variant = "banner", className }) {
-  const { canInstall, showIosHint, isStandalone, promptInstall, dismissInstall } = usePwa();
+  const { showPrompt, showUnsupported, isStandalone, canInstall, guide, promptInstall, dismissInstall } =
+    usePwa();
+
+  const Icon = guide.mode === "native" ? Download : Share;
 
   if (variant === "inline") {
     if (isStandalone) {
       return (
         <div className={cn("flex items-center gap-3 text-sm text-foreground-500", className)}>
-          <CheckCircle2 className="size-4 text-emerald-400" />
-          Streamify is installed on this device
+          <CheckCircle2 className="size-4 shrink-0 text-emerald-400" />
+          Installed on this device
         </div>
       );
     }
-    if (canInstall) {
+    if (!guide.supported) {
       return (
-        <button
-          type="button"
-          onClick={promptInstall}
-          className={cn(
-            "inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium transition hover:bg-white/15",
-            className
-          )}
-        >
-          <Download className="size-4" />
-          Install the app
-        </button>
+        <p className={cn("text-sm text-foreground-500", className)}>{guide.summary}</p>
       );
     }
-    if (showIosHint) {
-      return (
-        <p className={cn("flex items-center gap-2 text-sm text-foreground-500", className)}>
-          <Share className="size-4" />
-          Add to Home Screen from the Share menu to install
-        </p>
-      );
-    }
-    return null;
+    return (
+      <div className={cn("w-full", className)}>
+        {canInstall ? (
+          <button
+            type="button"
+            onClick={promptInstall}
+            className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium transition hover:bg-white/15"
+          >
+            <Download className="size-4" />
+            Install the app
+          </button>
+        ) : (
+          <div>
+            <p className="flex items-center gap-2 text-sm font-medium">
+              <Icon className="size-4 text-primary" />
+              {guide.title}
+            </p>
+            <Steps steps={guide.steps} className="mt-2" />
+          </div>
+        )}
+      </div>
+    );
   }
 
-  if (!canInstall && !showIosHint) return null;
-
   if (variant === "compact") {
+    // Nothing useful to say on this device, so say nothing.
+    if (!showPrompt || !guide.supported) return null;
     return (
       <div className={cn("flex items-center gap-2 rounded-xl px-3 py-2.5", className)}>
         {canInstall ? (
@@ -82,20 +103,47 @@ export default function InstallPrompt({ variant = "banner", className }) {
     );
   }
 
-  return (
-    <div className={cn("glass flex items-center gap-4 rounded-3xl p-4", className)}>
-      <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
-        <Download className="size-5" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold tracking-tight">Install Streamify</p>
-        <p className="truncate text-xs text-foreground-500">
-          {canInstall
-            ? "Add it to your home screen for full-screen, offline-ready listening."
-            : "Tap Share, then “Add to Home Screen” to install."}
-        </p>
+  // Unsupported browsers still get told what to do instead, but only once and
+  // only where the advice is actionable (opening in Safari or Chrome).
+  if (showUnsupported) {
+    return (
+      <div className={cn("glass flex items-start gap-3 rounded-3xl p-4", className)}>
+        <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-glass-faint text-foreground-500">
+          <Share className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold tracking-tight">{guide.title}</p>
+          <p className="mt-0.5 text-xs leading-relaxed text-foreground-500">{guide.summary}</p>
+        </div>
+        <button
+          type="button"
+          onClick={dismissInstall}
+          aria-label="Dismiss install prompt"
+          className="grid size-8 shrink-0 place-items-center rounded-full text-foreground-500 transition hover:bg-white/10 hover:text-foreground"
+        >
+          <X className="size-3.5" />
+        </button>
       </div>
-      <div className="flex shrink-0 items-center gap-1">
+    );
+  }
+
+  if (!showPrompt || !guide.supported) return null;
+
+  return (
+    <div className={cn("glass flex flex-col gap-4 rounded-3xl p-4 sm:flex-row sm:items-center", className)}>
+      <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
+        <Icon className="size-5" />
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold tracking-tight">{guide.title}</p>
+        <p className="mt-0.5 text-xs leading-relaxed text-foreground-500">{guide.summary}</p>
+        {guide.mode === "manual" && guide.steps ? (
+          <Steps steps={guide.steps} className="mt-3" />
+        ) : null}
+      </div>
+
+      <div className="flex shrink-0 items-center gap-1 self-start sm:self-center">
         {canInstall ? (
           <button
             type="button"

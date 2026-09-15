@@ -107,7 +107,8 @@ export default function HomePage() {
         </p>
       </header>
 
-      <InstallPrompt variant="banner" className="hidden sm:flex" />
+      {/* Shown on every screen size: phones are exactly where installing helps most. */}
+      <InstallPrompt variant="banner" />
 
       {heroSong ? (
         <HeroCard

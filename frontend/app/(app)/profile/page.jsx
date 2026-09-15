@@ -134,12 +134,12 @@ export default function ProfilePage() {
             </div>
             <ThemeToggle />
           </div>
-          <div className="flex items-center justify-between gap-4 py-3">
+          <div className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div className="min-w-0">
               <p className="text-sm font-medium">Install</p>
               <p className="text-xs text-foreground-500">Full-screen app with home-screen icon</p>
             </div>
-            <InstallPrompt variant="inline" className="shrink-0 justify-end text-right" />
+            <InstallPrompt variant="inline" className="sm:shrink-0" />
           </div>
           <div className="flex items-center justify-between gap-4 py-3">
             <div className="min-w-0">
