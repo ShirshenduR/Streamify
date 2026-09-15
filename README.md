@@ -195,9 +195,26 @@ required.
 | `DJANGO_SECRET_KEY` (or `SECRET_KEY`) | backend  | prod     | Django secret. Either name is accepted                          |
 | `DEBUG`                               | backend  | no       | Defaults to `True`; parsed as a real boolean                    |
 | `DATABASE_URL`                        | backend  | prod     | Postgres URL. Omit locally to use SQLite                        |
+| `SAAVN_API_URL`                       | backend  | no       | Music catalogue base URL. Defaults to the API bundled in the container. **Set this to an India-region deployment** for the full catalogue — see below |
 
 `NEXT_PUBLIC_*` equivalents are also accepted for the Firebase values if you prefer that
 convention, but the `VITE_*` names are what the app reads at runtime.
+
+### Why `SAAVN_API_URL` exists
+
+JioSaavn scopes its **search index by region**. Measured from a Render container:
+
+| Query | Result from Render | Result from an Indian connection |
+| ----- | ------------------ | -------------------------------- |
+| `kesariya` | Pritam, Arijit Singh at 0,1,2 ✅ | same ✅ |
+| `heat waves` | 30/30 instrumental covers, **Glass Animals absent from all 30** ❌ | Glass Animals at 0–9 ✅ |
+| `/api/songs/<id>` for that same track | resolves fine ✅ | ✅ |
+
+So the Indian catalogue is always available, but the licensed international one is only in the
+search index served to Indian-region callers — and it is not a ranking problem, so no amount of
+sorting or filtering recovers tracks the index does not contain. The bundled container API answers
+for Indian content anywhere; point `SAAVN_API_URL` at a host **running in India** (for example a
+Vercel deployment with `"regions": ["bom1"]`) to get everything.
 
 ---
 

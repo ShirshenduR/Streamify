@@ -21,6 +21,15 @@ services:
       - key: DEBUG
         value: "False"
 
+      # Music catalogue. Points at an India-region deployment of the JioSaavn
+      # API because JioSaavn scopes its search index by region: from Render's
+      # egress the search endpoint returns only unlicensed instrumental covers
+      # and omits the licensed originals. Leave this unset and the API bundled
+      # inside the image is used instead, which answers for Indian catalogue
+      # content only. Non-secret, so a plain value is fine.
+      - key: SAAVN_API_URL
+        value: https://jiosaavn-seven.vercel.app/api
+
       # Postgres. SQLite also boots, but a Render filesystem is ephemeral so a
       # library would be lost on every deploy.
       - key: DATABASE_URL

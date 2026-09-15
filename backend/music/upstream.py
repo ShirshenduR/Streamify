@@ -11,6 +11,7 @@ Everything the app plays comes from here, so the module does three jobs:
 
 import copy
 import logging
+import os
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -19,15 +20,34 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-# The music catalogue is bundled into this container and reached over loopback
-# (see the root Dockerfile and saavn-api/serve.mjs). It used to point at the
-# shared public instance, saavn.sumit.co, but that WAF-bans whole networks — it
-# answered this project's network with Cloudflare "error code: 1027" on every
-# route, including the bare domain. Self-hosting also means the response shape is
-# pinned to a commit we control rather than whatever the public instance serves.
+# Where the music catalogue lives.
 #
-# Keep the port in step with saavn-api/serve.mjs and docker-entrypoint.sh.
-JIOSAAVN_API = "http://127.0.0.1:8123/api"
+# The default is the API bundled into this container on loopback (see the root
+# Dockerfile and saavn-api/serve.mjs), which needs no configuration and answers
+# for the Indian catalogue. Keep the port in step with saavn-api/serve.mjs and
+# docker-entrypoint.sh.
+#
+# Set SAAVN_API_URL to a deployment running *in India* for the full catalogue.
+# JioSaavn scopes its **search index** by region: from outside India the search
+# endpoint returns only unlicensed material — instrumental covers, workout
+# compilations — and omits the licensed originals altogether, even though those
+# same tracks still resolve by id. Measured from a Render container, searching
+# "heat waves" returned 30/30 instrumental covers with the real Glass Animals
+# track absent from all 30, while the identical code from an Indian connection
+# put it at the top. That is also what the upstream project's own
+# `regions: ["bom1"]` (Mumbai) is there for.
+
+def _catalogue_url():
+    """The configured catalogue base URL, trailing slash trimmed.
+
+    A function rather than only a constant so the configuration can be asserted
+    without reloading the module. Read once at import: changing it on Render
+    restarts the container anyway.
+    """
+    return (os.environ.get("SAAVN_API_URL") or "http://127.0.0.1:8123/api").rstrip("/")
+
+
+JIOSAAVN_API = _catalogue_url()
 REQUEST_TIMEOUT = 12
 QUALITY_ORDER = ("320kbps", "160kbps", "96kbps", "48kbps", "12kbps")
 COVER_SIZES = ("500x500", "150x150")

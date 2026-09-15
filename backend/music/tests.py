@@ -6,6 +6,7 @@ keeps the suite fast, deterministic and runnable offline.
 """
 
 import json
+import os
 import time
 from unittest import mock
 
@@ -441,6 +442,35 @@ class HelperTests(TestCase):
     def test_dedupe_preserves_order_and_drops_junk(self):
         songs = [song("b", "A"), song("a", "A"), song("b", "A"), None, {"id": ""}]
         self.assertEqual([s["id"] for s in views._dedupe(songs)], ["b", "a"])
+
+
+class CatalogueUrlTests(TestCase):
+    """The catalogue host is configurable, and that is load-bearing.
+
+    JioSaavn scopes its search index by region: from outside India the search
+    endpoint returns unlicensed instrumental covers and omits the licensed
+    originals. Deployments therefore have to be able to point at a host running
+    in India, while still working unconfigured.
+    """
+
+    def test_defaults_to_the_api_bundled_in_the_container(self):
+        without = {key: value for key, value in os.environ.items() if key != "SAAVN_API_URL"}
+        with mock.patch.dict(os.environ, without, clear=True):
+            self.assertEqual(upstream._catalogue_url(), "http://127.0.0.1:8123/api")
+
+    def test_follows_the_configured_url(self):
+        with mock.patch.dict(os.environ, {"SAAVN_API_URL": "https://example.test/api"}):
+            self.assertEqual(upstream._catalogue_url(), "https://example.test/api")
+
+    def test_trailing_slash_does_not_double_up(self):
+        """Paths are appended to this, so a stray slash would give //search/songs."""
+        with mock.patch.dict(os.environ, {"SAAVN_API_URL": "https://example.test/api/"}):
+            self.assertEqual(upstream._catalogue_url(), "https://example.test/api")
+
+    def test_an_empty_value_falls_back_to_the_bundled_api(self):
+        """An unset variable on Render arrives as an empty string."""
+        with mock.patch.dict(os.environ, {"SAAVN_API_URL": ""}):
+            self.assertEqual(upstream._catalogue_url(), "http://127.0.0.1:8123/api")
 
 
 class IndexTests(TestCase):
