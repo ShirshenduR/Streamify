@@ -153,6 +153,11 @@ html.light {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
 
+/* Bottom padding for the floating dock: its own inset plus the home indicator. */
+@utility pb-dock {
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+}
+
 @utility pt-safe {
   padding-top: max(0.5rem, env(safe-area-inset-top));
 }

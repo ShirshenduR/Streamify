@@ -16,7 +16,9 @@ export default function BottomNav({ className }) {
     <nav
       aria-label="Primary"
       className={cn(
-        "glass-bar pb-safe z-40 flex shrink-0 items-stretch justify-around border-t border-[var(--color-hairline-soft)] px-1 pt-1.5 lg:hidden",
+        // Floating and translucent, matching the player pill above it. The safe
+        // area is handled by the dock's own padding, not here.
+        "glass-float flex items-stretch justify-around gap-1 rounded-[22px] border border-[var(--color-hairline)] p-1.5 lg:hidden",
         className
       )}
     >

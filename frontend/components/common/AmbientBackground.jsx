@@ -27,7 +27,7 @@ export default function AmbientBackground({ variant = "soft", cover: overrideCov
           src={cover}
           alt=""
           className={`animate-fade-in absolute inset-0 size-full scale-150 object-cover blur-[90px] ${
-            strong ? "opacity-55" : "opacity-[0.28]"
+            strong ? "opacity-55" : "opacity-40"
           }`}
         />
       ) : null}
@@ -35,9 +35,15 @@ export default function AmbientBackground({ variant = "soft", cover: overrideCov
       <div className="animate-drift absolute -top-1/3 left-1/2 h-[70vh] w-[90vw] -translate-x-1/2 rounded-full bg-primary/25 blur-[140px]" />
       <div className="absolute -bottom-1/3 -right-1/4 h-[60vh] w-[70vw] rounded-full bg-fuchsia-500/15 blur-[150px]" />
 
+      {/* The wash must stay translucent along the bottom. Ending on opaque
+          `background` left the floating glass with nothing but near-black behind
+          it, so it stopped reading as glass at all. The middle stays dense
+          because that is where text sits. */}
       <div
         className={`absolute inset-0 bg-gradient-to-b ${
-          strong ? "from-background/55 via-background/70 to-background" : "from-background/60 via-background/80 to-background"
+          strong
+            ? "from-background/55 via-background/70 to-background"
+            : "from-background/60 via-background/72 to-background/45"
         }`}
       />
     </div>
