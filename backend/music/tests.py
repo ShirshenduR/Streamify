@@ -26,6 +26,7 @@ SAMPLE_PAYLOAD = {
                 "id": "3IoDK8qI",
                 "name": "Kesariya",
                 "duration": 268,
+                "language": "hindi",
                 "album": {"id": "11", "name": "Brahmastra"},
                 "artists": {
                     "primary": [
@@ -79,7 +80,12 @@ class NormalisationTests(TestCase):
         self.assertEqual(normalised["artist"], "Arijit Singh, Amitabh Bhattacharya")
         self.assertEqual(normalised["duration"], 268)
         self.assertEqual(normalised["album"], "Brahmastra")
+        self.assertEqual(normalised["language"], "hindi")
         self.assertEqual(normalised["source"], "jiosaavn")
+
+    def test_language_is_empty_rather_than_missing_when_absent(self):
+        """The UI reads this field, so it must always be a string."""
+        self.assertEqual(upstream._normalise({"id": "x"})["language"], "")
 
     def test_prefers_the_largest_cover_and_the_best_quality_stream(self):
         normalised = upstream._normalise(SAMPLE_PAYLOAD["data"]["results"][0])
@@ -304,7 +310,9 @@ class RecommendationTests(TestCase):
         self.assertTrue(all(item["reason"].startswith("Because you like") for item in result["results"]))
 
     def test_cold_start_falls_back_to_seeded_searches(self):
-        buckets = {"pop hits": [song("p1", "Pop Star")]}
+        # Keyed off the configured seed query rather than a literal, so changing
+        # the seeds cannot quietly turn this into a test of nothing.
+        buckets = {views.MOODS[0]["query"]: [song("p1", "Pop Star")]}
         with mock.patch.object(upstream, "search_many", return_value=buckets):
             result = views.build_recommendations(self.user, limit=4)
 
@@ -433,3 +441,58 @@ class HelperTests(TestCase):
     def test_dedupe_preserves_order_and_drops_junk(self):
         songs = [song("b", "A"), song("a", "A"), song("b", "A"), None, {"id": ""}]
         self.assertEqual([s["id"] for s in views._dedupe(songs)], ["b", "a"])
+
+
+class ShelfQualityTests(TestCase):
+    """Seeded browse queries repeat artists badly; shelves must not look broken."""
+
+    def test_one_artist_cannot_fill_a_shelf(self):
+        songs = [song(f"d{index}", "Derrol") for index in range(5)]
+        songs.append(song("other", "Someone Else"))
+        capped = views._cap_per_artist(songs, limit=4)
+        self.assertEqual([s["artist"] for s in capped], ["Derrol", "Derrol", "Someone Else"])
+
+    def test_the_cap_respects_the_limit(self):
+        songs = [song(str(index), f"Artist {index}") for index in range(10)]
+        self.assertEqual(len(views._cap_per_artist(songs, limit=3)), 3)
+
+    def test_the_lead_artist_is_what_counts(self):
+        """'A, B' and 'A, C' are the same act taking two slots, not two acts."""
+        songs = [
+            song("1", "Arijit Singh, Pritam"),
+            song("2", "Arijit Singh, Shreya Ghoshal"),
+            song("3", "Arijit Singh, Someone"),
+        ]
+        self.assertEqual(len(views._cap_per_artist(songs, limit=5)), 2)
+
+    def test_cap_tolerates_missing_artists(self):
+        songs = [song("1", ""), song("2", ""), song("3", "Real")]
+        self.assertEqual(len(views._cap_per_artist(songs, limit=5)), 3)
+
+    def test_discover_applies_the_cap_to_every_section(self):
+        repeated = [song(f"s{index}", "Same Artist") for index in range(8)]
+        buckets = {section["query"]: repeated for section in views.DISCOVER_SECTIONS}
+        with mock.patch.object(upstream, "search_many", return_value=buckets):
+            payload = self.client.get("/api/discover/?limit=6").json()
+
+        self.assertTrue(payload["sections"], "expected at least one shelf")
+        for section in payload["sections"]:
+            artists = [item["artist"] for item in section["songs"]]
+            self.assertLessEqual(artists.count("Same Artist"), 2, section["title"])
+
+    def test_international_queries_are_present(self):
+        """Regression guard: these were measured, so tidying them away would
+        quietly make the whole browse experience India-only again."""
+        queries = " ".join(section["query"] for section in views.DISCOVER_SECTIONS)
+        self.assertIn("english", queries)
+        self.assertIn("rock", queries)
+        # The phrasings that were tested and rejected, because they resolve back
+        # into the Indian catalogue.
+        self.assertNotIn("international hits", queries)
+        self.assertNotIn("global hits", queries)
+
+    def test_mood_tiles_keep_their_labels(self):
+        """The frontend keys its gradient tiles off the labels."""
+        labels = [mood["label"] for mood in views.MOODS]
+        for expected in ("Pop", "Rock", "Indie", "Electronic", "Bollywood"):
+            self.assertIn(expected, labels)

@@ -263,6 +263,10 @@ def _normalise(song):
         "cover": _pick_image(song),
         "duration": duration,
         "album": album.get("name") if isinstance(album, dict) else (album or ""),
+        # JioSaavn is an Indian catalogue first, so the language of a result is
+        # often what decides whether it is what the person meant. Kept so the UI
+        # — and anyone debugging a search — can tell them apart.
+        "language": song.get("language") or "",
         "source": "jiosaavn",
         # Present in search payloads, so most tracks can start playing without a
         # second round trip. Never persisted — these CDN URLs expire.

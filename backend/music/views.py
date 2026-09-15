@@ -32,28 +32,37 @@ MAX_LIMIT = 60
 
 # Queries behind the home page shelves. Seeded searches keep "discover" content
 # available for every user, including brand new ones.
+#
+# These strings are chosen from measurement, not intuition: JioSaavn is an Indian
+# catalogue, and generic English-sounding queries do not reliably leave it.
+# "international hits" resolved to 5/8 Punjabi and "global hits" to 5/8 Hindi,
+# whereas the phrasings below came back 8/8 English. Without them the whole
+# browse experience reads as India-only even though search finds anything.
 DISCOVER_SECTIONS = (
     {"key": "trending", "title": "Trending now", "query": "top hits"},
+    {"key": "english", "title": "English hits", "query": "english pop hits"},
     {"key": "chill", "title": "Chill vibes", "query": "chill songs"},
-    {"key": "workout", "title": "Workout", "query": "workout songs"},
+    {"key": "rock", "title": "Rock classics", "query": "rock classics"},
     {"key": "romantic", "title": "Romance", "query": "romantic songs"},
+    {"key": "edm", "title": "Dance & EDM", "query": "edm hits"},
     {"key": "lofi", "title": "Lo-fi & focus", "query": "lofi beats"},
     {"key": "party", "title": "Party starters", "query": "party hits"},
 )
 
+# Labels are unchanged on purpose: the frontend keys its gradient tiles off them.
 MOODS = (
-    {"label": "Pop", "query": "pop hits"},
+    {"label": "Pop", "query": "english pop hits"},
     {"label": "Hip-Hop", "query": "hip hop hits"},
     {"label": "Rock", "query": "rock classics"},
     {"label": "Lo-fi", "query": "lofi beats"},
     {"label": "Chill", "query": "chill songs"},
     {"label": "Workout", "query": "workout songs"},
-    {"label": "Romance", "query": "romantic songs"},
+    {"label": "Romance", "query": "english love songs"},
     {"label": "Party", "query": "party hits"},
-    {"label": "Indie", "query": "indie songs"},
-    {"label": "Electronic", "query": "electronic dance"},
+    {"label": "Indie", "query": "english indie"},
+    {"label": "Electronic", "query": "edm hits"},
     {"label": "Bollywood", "query": "bollywood hits"},
-    {"label": "Focus", "query": "study focus music"},
+    {"label": "Focus", "query": "instrumental study"},
 )
 
 
@@ -137,6 +146,29 @@ def _dedupe(songs):
     return unique
 
 
+def _cap_per_artist(songs, limit, per_artist=2):
+    """Keep one act from filling a shelf.
+
+    Seeded queries do return the same artist over and over — "lofi beats" gave
+    one artist five slots in a row, and "english love songs" five of the same
+    singer — which reads as broken rather than as a playlist.
+    """
+    counts = defaultdict(int)
+    kept = []
+    for song in songs:
+        if not song:
+            continue
+        lead = (song.get("artist") or "").split(",")[0].strip().lower()
+        if lead and counts[lead] >= per_artist:
+            continue
+        if lead:
+            counts[lead] += 1
+        kept.append(song)
+        if len(kept) >= limit:
+            break
+    return kept
+
+
 def _split_artists(value):
     if not value:
         return []
@@ -206,7 +238,7 @@ def discover(request):
     )
     sections = []
     for section in DISCOVER_SECTIONS:
-        songs = _dedupe(buckets.get(section["query"], []))[:limit]
+        songs = _cap_per_artist(_dedupe(buckets.get(section["query"], [])), limit)
         if songs:
             sections.append({**section, "songs": songs})
     return JsonResponse({"sections": sections, "moods": MOODS, **_upstream_state()})
@@ -356,7 +388,7 @@ def _cold_start(limit):
     pool = []
     for query in queries:
         pool.extend(buckets.get(query, []))
-    return _dedupe(pool)[:limit]
+    return _cap_per_artist(_dedupe(pool), limit)
 
 
 def build_recommendations(user, limit):
