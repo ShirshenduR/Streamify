@@ -212,10 +212,32 @@ plus a free Postgres, and prompts you for the secrets listed above.
 **Option B — manual.** Render → **New → Web Service** → connect the repo → set **Runtime: Docker**,
 **Dockerfile path: `./Dockerfile`**, and add the variables from the table.
 
-Notes:
+### ⚠️ Set `DATABASE_URL`, or your library resets on every deploy
 
-- Set **`DATABASE_URL`** (the blueprint wires it automatically). A container filesystem is
-  ephemeral, so without Postgres your library resets on every deploy.
+This is the one step that is easy to skip and expensive to discover later.
+
+A container's filesystem is **ephemeral**: Render replaces the container on every deploy, so with
+SQLite the likes, playlists and listening history it wrote are gone, and the next deploy starts from
+an empty database. Nothing errors — your library is just empty again.
+
+- **Blueprint (Option A):** handled for you. `render.yaml` declares a `streamify-db` Postgres and
+  injects its connection string as `DATABASE_URL`.
+- **Manual (Option B):** create a Postgres instance (Render → **New → Postgres**) and set
+  `DATABASE_URL` on the web service to its **Internal Database URL**.
+
+Schema changes apply automatically on every deploy either way — the entrypoint runs
+`manage.py migrate` before starting. Only the *data* needs Postgres.
+
+If you forget, the container says so at startup rather than failing silently:
+
+```
+[WARNING] streamify_api.settings: DATABASE_URL is not set, so this deployment is running on
+SQLite. On a host with an ephemeral filesystem every deploy resets the database and the whole
+library is lost. Attach a Postgres instance and set DATABASE_URL to persist it.
+```
+
+Other deploy notes:
+
 - The health check path is **`/api/health`**.
 - Render terminates TLS and provides `PORT`; the entrypoint starts Django on loopback, waits for it,
   then starts Next on `$PORT`. One container, one URL.

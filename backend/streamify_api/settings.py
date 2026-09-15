@@ -162,3 +162,20 @@ LOGGING = {
         "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False},
     },
 }
+
+# --------------------------------------------------------------------------- #
+# Data-loss guard
+# --------------------------------------------------------------------------- #
+
+# SQLite is the zero-config local default, but on a host with an ephemeral
+# filesystem — Render included — the container is replaced on every deploy, so
+# likes, playlists and listening history silently start from empty each time.
+# That is invisible until someone notices their library has vanished, so say it
+# loudly at startup instead. Deliberately a warning and not a hard failure:
+# refusing to boot would take /api/health down with it and fail the deploy.
+if not DEBUG and DATABASES["default"]["ENGINE"].endswith("sqlite3"):
+    logging.getLogger(__name__).warning(
+        "DATABASE_URL is not set, so this deployment is running on SQLite. On a host "
+        "with an ephemeral filesystem every deploy resets the database and the whole "
+        "library is lost. Attach a Postgres instance and set DATABASE_URL to persist it."
+    )

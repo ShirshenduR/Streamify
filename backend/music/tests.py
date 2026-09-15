@@ -14,7 +14,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from . import upstream, views
-from .models import LikedSong, ListeningHistory, PlaylistSong
+from .models import LikedSong, ListeningHistory, Playlist, PlaylistSong
 
 SAMPLE_PAYLOAD = {
     "success": True,
@@ -441,6 +441,32 @@ class HelperTests(TestCase):
     def test_dedupe_preserves_order_and_drops_junk(self):
         songs = [song("b", "A"), song("a", "A"), song("b", "A"), None, {"id": ""}]
         self.assertEqual([s["id"] for s in views._dedupe(songs)], ["b", "a"])
+
+
+class IndexTests(TestCase):
+    """Guard the indexes behind the hot read paths.
+
+    Every one of these reads is "filter by owner, ordered by a timestamp", so a
+    plain foreign-key index would still sort in memory. The declarations are easy
+    to drop by accident and nothing else would fail, so assert them directly.
+    """
+
+    def test_owner_scoped_reads_declare_a_composite_index(self):
+        expected = {
+            LikedSong: ("user", "-added_at"),
+            ListeningHistory: ("user", "-last_played"),
+            Playlist: ("user", "-created_at"),
+        }
+        for model, fields in expected.items():
+            declared = [tuple(index.fields) for index in model._meta.indexes]
+            self.assertIn(fields, declared, f"{model.__name__} lost its index")
+
+    def test_playlist_songs_are_indexed_for_reading_and_lookup(self):
+        declared = [tuple(index.fields) for index in PlaylistSong._meta.indexes]
+        # Ordered read of one playlist.
+        self.assertIn(("playlist", "position"), declared)
+        # Add / remove / reorder look a track up inside one playlist.
+        self.assertIn(("playlist", "song_id"), declared)
 
 
 class ShelfQualityTests(TestCase):
